@@ -13,14 +13,20 @@ export class MarrowActor extends Actor {
   /**
    * A token pointing at an unlinked Actor is its own private copy: damage, Wounds, an
    * equipped weapon change on one token and the Actors directory, and every other token
-   * of the same character, know nothing about it. That is the wrong default for a game
-   * where a fight follows you from scene to scene, so every new Actor links by default.
+   * of the same character, know nothing about it. That is the wrong default for a
+   * Character or Companion, who each mean one specific someone followed across scenes.
+   *
+   * A Creature is different: the same "Goblin" Actor is routinely dropped onto a scene two
+   * or three times, and those instances are not the same goblin. Linking them would make
+   * one goblin's Health everyone's Health, so creatures keep Foundry's own unlinked default.
    */
   async _preCreate(data, options, user) {
     if ((await super._preCreate(data, options, user)) === false) return false;
-    if (foundry.utils.getProperty(data, 'prototypeToken.actorLink') === undefined) {
-      this.updateSource({ 'prototypeToken.actorLink': true });
-    }
+    if (this.type === 'creature') return;
+    // Not guarded on whether `data` already specifies a value: the schema's own default of
+    // false is filled in by the time _preCreate runs, indistinguishable from a real choice,
+    // so checking for undefined here silently never fires and the Actor stays unlinked.
+    this.updateSource({ 'prototypeToken.actorLink': true });
   }
 
   /* --- Checks ---------------------------------------------------------------- */

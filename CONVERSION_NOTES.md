@@ -101,6 +101,12 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
   MARROW's own Armor items (AP/DR/state) instead of Mothership's flat armor stat, since that
   is strictly more capable and already exists. Say the word if you want the toggles or the
   swarm rule too.
+- **Character and Companion Actors link their prototype token; Creature does not.** A
+  Character or Companion is one specific someone followed across scenes, so their token
+  should always read the one Actor's real numbers. A Creature is routinely dropped onto a
+  scene two or three times as separate monsters ("Goblin" x3), and linking those would make
+  one goblin's Health everyone's. This is a judgement call MARROW.md has no opinion on,
+  flagged in case it's wrong for how you actually run things.
 - **The Check dialog lets you check more than one Skill at once.** X.5 says "If you hold a
   Skill that genuinely applies, add its bonus" -- singular, and arguably one specialization
   at a time is what was meant. By request, the dialog does not enforce that reading: every
