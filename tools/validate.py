@@ -339,6 +339,19 @@ def check_manifest():
             if not re.search(rf"\b{re.escape(type_name)}\s*:", entry_point):
                 fail(f"system.json: {kind} type {type_name!r} has no data model in the entry point")
 
+    # And the reverse: a data model registered in JS with no matching documentTypes entry is
+    # a legal-looking type that Foundry will never actually offer -- CONFIG.Actor.dataModels
+    # controls what code exists for a type, but system.json's documentTypes is what makes
+    # Foundry's document schema accept the type at all. This is exactly the gap that shipped
+    # 0.1.8 with a Creature type nothing could create.
+    for kind in ("Actor", "Item"):
+        block = re.search(rf"CONFIG\.{kind}\.dataModels\s*=\s*\{{(.*?)\}};", entry_point, re.S)
+        declared_types = set(system["documentTypes"].get(kind, {}))
+        for type_name in re.findall(r"(\w+):\s*\w+Data", block.group(1)) if block else []:
+            if type_name not in declared_types:
+                fail(f"module/marrow.mjs: {kind} data model {type_name!r} is registered in JS "
+                     f"but missing from system.json's documentTypes -- Foundry will never offer it")
+
     declared = {p["name"] for p in system.get("packs", [])}
     for folder in system.get("packFolders", []):
         for name in folder.get("packs", []):

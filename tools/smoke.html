@@ -93,7 +93,7 @@ globalThis.Actor = class { static implementation = class {}; };
 globalThis.Item = class { static implementation = class {}; };
 globalThis.Roll = class { constructor() {} async evaluate() { return this; } get total() { return 1; } };
 globalThis.ChatMessage = class { static getSpeaker() { return {}; } static create() {} };
-globalThis.CONFIG = { Actor: {}, Item: {}, controlIcons: {}, MARROW: null };
+globalThis.CONFIG = { Actor: {}, Item: {}, controlIcons: {}, statusEffects: [], MARROW: null };
 globalThis.ui = { notifications: { warn: () => {} } };
 globalThis.game = {
   i18n: { localize: (k) => k, format: (k) => k },
@@ -225,9 +225,9 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
   */
   const checkCtx = {
     key: 'combat', label: 'Combat Check', base: 42,
-    rollable: [], skills: [{ id: 's1', name: 'Athletics',
-                              system: { rankLabel: 'Trained', bonus: 10 } }],
-    selectedSkill: '', innate: true,
+    rollable: [], skills: [{ id: 's1', name: 'Athletics', bonus: 10,
+                              rankLabel: 'Trained', checked: false }],
+    innate: true,
     given: [{ source: 'Longsword vs. Soft', effect: 'advantage', mark: '[+]' }],
   };
   const classChoiceCtx = {

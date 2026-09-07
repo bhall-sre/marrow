@@ -22,16 +22,16 @@ export class MarrowCheck {
    * @param {object} options
    * @param {string} options.key         a Stat, Save, or 'loyalty' / 'instinct'
    * @param {string} [options.kind]      'check' | 'working' | 'rest'
-   * @param {Item}   [options.skill]     a Skill item whose bonus applies (X.5)
+   * @param {Item[]} [options.skills]    Skill items whose bonuses all apply (X.5)
    * @param {Item}   [options.working]   the Working being attempted
    * @param {Array}  [options.sources]   [{source, effect}] for [+] / [-]
    * @param {string} [options.flavor]
    */
-  constructor(actor, { key, kind = 'check', skill = null, working = null, sources = [], flavor = '' } = {}) {
+  constructor(actor, { key, kind = 'check', skills = [], working = null, sources = [], flavor = '' } = {}) {
     this.actor = actor;
     this.key = key;
     this.kind = kind;
-    this.skill = skill;
+    this.skills = skills.filter(Boolean);
     this.working = working;
     this.flavor = flavor;
     this.sources = sources.filter(s => s && s.effect);
@@ -49,9 +49,18 @@ export class MarrowCheck {
     return game.i18n.localize('MARROW.Reason.Consumed');
   }
 
-  /** X.5: the Skill's bonus raises the number you roll under. */
+  /**
+   * X.5: "add its bonus." Holding several skills that genuinely apply to the same Check is
+   * not something MARROW.md rules out, so each one raises the target in turn -- by request,
+   * see CONVERSION_NOTES.md.
+   */
   get skillBonus() {
-    return this.skill?.system.bonus ?? 0;
+    return this.skills.reduce((sum, s) => sum + (s?.system.bonus ?? 0), 0);
+  }
+
+  /** For the chat card: "Athletics +10, Surgery +15", or '' when none applied. */
+  get skillLabel() {
+    return this.skills.map(s => `${s.name} +${s.system.bonus}`).join(', ');
   }
 
   get target() {

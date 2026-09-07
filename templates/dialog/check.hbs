@@ -25,17 +25,19 @@
     </label>
   {{/if}}
 
-  <label class="stacked">
-    <span>{{localize 'MARROW.Dialog.Skill'}}</span>
-    <select name="skill">
-      <option value="">{{localize 'MARROW.Dialog.NoSkill'}}</option>
-      {{#each skills as |skill|}}
-        <option value="{{skill.id}}" {{selected (eq skill.id ../selectedSkill)}}>
-          {{skill.name}} ({{skill.system.rankLabel}} +{{skill.system.bonus}})
-        </option>
-      {{/each}}
-    </select>
-  </label>
+  {{!-- X.5: "add its bonus" for a Skill that genuinely applies -- nothing says only one can,
+        so every held Skill you check in adds its own. --}}
+  <fieldset class="skills">
+    <legend>{{localize 'MARROW.Dialog.Skill'}}</legend>
+    {{#each skills as |skill|}}
+      <label class="skill-choice">
+        <input type="checkbox" name="skill" value="{{skill.id}}" {{checked skill.checked}} />
+        {{skill.name}} ({{skill.rankLabel}} <span class="bonus">+{{skill.bonus}}</span>)
+      </label>
+    {{else}}
+      <p class="notice">{{localize 'MARROW.Dialog.NoSkill'}}</p>
+    {{/each}}
+  </fieldset>
 
   {{#if given.length}}
     {{!-- VIII.1's armour matchup, and any [+]/[-] the weapon itself carries. --}}

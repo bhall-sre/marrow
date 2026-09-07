@@ -19,8 +19,8 @@ export class CheckDialog {
   /**
    * @param {Actor} actor
    * @param {object} options
-   * @param {string} options.key       the Stat or Save being rolled
-   * @param {Item}   [options.skill]   a Skill to pre-select
+   * @param {string} options.key        the Stat or Save being rolled
+   * @param {Item}   [options.skill]    a Skill to pre-check
    * @param {string} [options.kind]
    * @param {string} [options.flavor]
    * @returns {Promise<object|null>} the Check result, or null if cancelled
@@ -47,8 +47,11 @@ export class CheckDialog {
         rollable,
         label: key ? CheckDialog.#labelFor(actor, key) : '',
         base: key ? actor.system.rollTarget(key) : null,
-        skills: applicable,
-        selectedSkill: skill?.id ?? '',
+        // A checkbox per held Skill, not a single-choice dropdown -- X.5 says "add its bonus"
+        // for a Skill that applies, and nothing stops more than one from genuinely applying
+        // at once. See CONVERSION_NOTES.md.
+        skills: applicable.map(s => ({ id: s.id, name: s.name, bonus: s.system.bonus,
+                                        rankLabel: s.system.rankLabel, checked: s.id === skill?.id })),
         // Shown, not chosen: the player cannot switch these off (XVI.1, XX).
         innate: key ? (actor.system.hasDisadvantageOn?.(key) ?? false) : false,
         // VIII.1's matchup and a weapon's own [+]/[-] are facts about the attack, so they
@@ -73,7 +76,7 @@ export class CheckDialog {
     });
     if (!answer) return null;
 
-    const chosenSkill = actor.items.get(answer.get('skill')) ?? null;
+    const chosenSkills = answer.getAll('skill').map(id => actor.items.get(id)).filter(Boolean);
     const situational = answer.get('situational');
     const chosenKey = key ?? answer.get('key');
     if (!chosenKey) return null;
@@ -83,7 +86,7 @@ export class CheckDialog {
       sources.push({ source: game.i18n.localize('MARROW.Reason.Situational'), effect: situational });
     }
 
-    return new MarrowCheck(actor, { key: chosenKey, kind, flavor, skill: chosenSkill, sources }).evaluate();
+    return new MarrowCheck(actor, { key: chosenKey, kind, flavor, skills: chosenSkills, sources }).evaluate();
   }
 
   /** Every number on this actor that can be rolled under. */

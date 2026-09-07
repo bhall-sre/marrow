@@ -733,14 +733,16 @@
   font-weight: 700;
 }
 
-.marrow fieldset.situational {
+.marrow fieldset.situational,
+.marrow fieldset.skills {
   border: 1px solid var(--parchment-deep);
   border-radius: 2px;
   padding: 6px 10px 8px;
   margin: 0 0 10px;
 }
 
-.marrow fieldset.situational legend {
+.marrow fieldset.situational legend,
+.marrow fieldset.skills legend {
   font-family: var(--font-display);
   font-size: .58rem;
   letter-spacing: .1em;
@@ -749,12 +751,16 @@
   padding: 0 4px;
 }
 
-.marrow fieldset.situational label {
+.marrow fieldset.situational label,
+.marrow fieldset.skills .skill-choice {
   display: flex;
   align-items: center;
   gap: 5px;
   font-size: .86rem;
 }
+
+.marrow fieldset.skills .skill-choice { padding: 1px 0; }
+.marrow fieldset.skills .bonus { color: var(--ink-faint); }
 
 .marrow .innate-note {
   font-size: .8rem;

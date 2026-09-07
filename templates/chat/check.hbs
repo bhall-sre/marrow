@@ -6,8 +6,8 @@
 
   <header class="card-head">
     <span class="what">{{label}}</span>
-    {{#if check.skill}}
-      <span class="skill">{{check.skill.name}} +{{check.skillBonus}}</span>
+    {{#if check.skills.length}}
+      <span class="skill">{{check.skillLabel}}</span>
     {{/if}}
   </header>
 

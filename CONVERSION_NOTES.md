@@ -101,6 +101,10 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
   MARROW's own Armor items (AP/DR/state) instead of Mothership's flat armor stat, since that
   is strictly more capable and already exists. Say the word if you want the toggles or the
   swarm rule too.
+- **The Check dialog lets you check more than one Skill at once.** X.5 says "If you hold a
+  Skill that genuinely applies, add its bonus" -- singular, and arguably one specialization
+  at a time is what was meant. By request, the dialog does not enforce that reading: every
+  Skill checked adds its own bonus. `MarrowCheck` sums `skills[]` rather than holding one.
 - **All third-party art was removed.** Item and table artwork now uses Foundry's own bundled
   `icons/` set. The one image in this repo, `images/ui/pause.svg`, is ours.
 - **The stylesheet was rewritten**, keyed to the new markup. It is hand-maintained; there is

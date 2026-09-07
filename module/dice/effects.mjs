@@ -31,15 +31,46 @@ const STAT_WORDS = {
 const NOT_YOURS = /\b(companion|close friendly|others|everyone|all close)\b/i;
 
 /**
+ * Every row on the Panic table and both Wound and Panic's own Conditions lead with a short
+ * label before the first period -- "RAGE.", "COWARD.", "Hand or foot severed." A real label
+ * is a handful of words; a whole sentence is not one, so anything longer is left alone.
+ */
+function rowLabel(text) {
+  const first = text.split('.')[0].trim();
+  if (!first || first.split(/\s+/).length > 5) return null;
+  // MARROW.md sets these in caps for emphasis ("RAGE.", "COWARD."); title case matches the
+  // pre-built Condition items build_packs.py already makes from the same rows.
+  return first.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Recognised patterns already handled above, stripped so what's left is purely narrative. */
+function stripRecognized(plain) {
+  return plain
+    .replace(/^(Flesh Wound|Minor|Major|Lethal|Fatal)\.\s*/i, '')
+    .replace(/Bleeding \+\d+\.?/gi, '')
+    .replace(/Minimum Stress \+\d+\.?/gi, '')
+    .replace(/Gain (\d+d\d+|\d+) Stress\.?/gi, '')
+    .replace(/Reduce Stress by (\d+d\d+|\d+)\.?/gi, '')
+    .replace(/-\s*(\d+d\d+|\d+)\s+(Strength|Speed|Intellect|Combat|Sanity Save|Fear Save|Body Save)\.?/gi, '')
+    .replace(/Reduce your Maximum Health by (\d+d\d+|\d+)\.?/gi, '')
+    .replace(/Death Save\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Apply everything a table result states, and return what was done so it can be reported.
  *
  * @param {Actor} actor
  * @param {string} text     the result's own words
  * @param {object} [opts]
  * @param {string} [opts.source]  what produced it, for the Condition's name
+ * @param {boolean} [opts.recordInjury]  XIII: a Wound is permanent by definition, so any
+ *   description left over once the mechanical part is parsed out -- "Hand or foot severed",
+ *   not just its "Bleeding +4" -- gets its own Condition even with no number attached to it.
  * @returns {Promise<{applied: string[], unhandled: string[], deathSave: boolean}>}
  */
-export async function applyResultEffects(actor, text, { source = '' } = {}) {
+export async function applyResultEffects(actor, text, { source = '', recordInjury = false } = {}) {
   const done = { applied: [], unhandled: [], deathSave: false };
   if (!text) return done;
 
@@ -117,8 +148,19 @@ export async function applyResultEffects(actor, text, { source = '' } = {}) {
     ? plain : null;
 
   if (conditionText || lasting) {
-    await addCondition(actor, source || 'Condition', conditionText ?? lasting);
+    await addCondition(actor, rowLabel(plain) ?? source ?? 'Condition', conditionText ?? lasting);
     done.applied.push('Condition');
+  } else if (recordInjury && done.applied.length) {
+    // A row like "Hand or foot severed. Bleeding +4." already had its Bleeding tracked above;
+    // the injury itself is not a number and would otherwise vanish once that match consumed
+    // the row. Gated on something else already having applied, so a purely descriptive miss
+    // like "Rib broken." with no number attached at all is left as flavor in the chat log
+    // rather than every Wound minting a permanent Condition for it.
+    const injury = stripRecognized(plain);
+    if (/[A-Za-z]{3,}/.test(injury)) {
+      await addCondition(actor, rowLabel(injury) ?? rowLabel(plain) ?? source ?? 'Condition', injury);
+      done.applied.push('Injury');
+    }
   }
 
   // --- XIII: Fatal --------------------------------------------------------

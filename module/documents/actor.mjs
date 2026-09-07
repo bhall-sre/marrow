@@ -10,6 +10,19 @@ import { armorMatchupSource, ADVANTAGE, DISADVANTAGE } from '../dice/roll.mjs';
  * and this class exists only to give the sheets and macros one obvious place to call.
  */
 export class MarrowActor extends Actor {
+  /**
+   * A token pointing at an unlinked Actor is its own private copy: damage, Wounds, an
+   * equipped weapon change on one token and the Actors directory, and every other token
+   * of the same character, know nothing about it. That is the wrong default for a game
+   * where a fight follows you from scene to scene, so every new Actor links by default.
+   */
+  async _preCreate(data, options, user) {
+    if ((await super._preCreate(data, options, user)) === false) return false;
+    if (foundry.utils.getProperty(data, 'prototypeToken.actorLink') === undefined) {
+      this.updateSource({ 'prototypeToken.actorLink': true });
+    }
+  }
+
   /* --- Checks ---------------------------------------------------------------- */
 
   /** X.1, X.2. Any Stat or Save, with an optional Skill and situational [+]/[-]. */
@@ -198,7 +211,7 @@ export class MarrowActor extends Actor {
       key: this.system.saves ? 'sanity' : 'instinct',
       kind: 'working',
       working,
-      skill: this.thaumaturgy,
+      skills: [this.thaumaturgy],
       flavor: game.i18n.format('MARROW.Working.Attempt', { name: working.name }),
       ...options,
     }).evaluate();

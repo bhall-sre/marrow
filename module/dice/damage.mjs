@@ -125,7 +125,7 @@ export async function takeWound(actor, damageType, outcome = {}) {
   // XIII's rows state their consequences in words -- "Bleeding +2", "Minimum Stress +1",
   // "-1d10 Strength". Do what the row says rather than leaving it for someone to notice.
   const text = draw?.results?.[0]?.description ?? draw?.results?.[0]?.text ?? '';
-  const effects = await applyResultEffects(actor, text, { source: tableName });
+  const effects = await applyResultEffects(actor, text, { source: tableName, recordInjury: true });
   outcome.effects = effects;
 
   if (next >= wounds.max || effects.deathSave) {

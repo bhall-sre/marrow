@@ -24,6 +24,13 @@ Hooks.once('init', () => {
   // A wheel broken at the hub (VII, Crest 03), turning while the table is away.
   CONFIG.controlIcons.pause = 'systems/marrow/images/ui/pause.svg';
 
+  // XI.3, XIII.1: a Condition item is easy to miss on a sheet nobody has open. The token
+  // itself carries the icon so it reads at a glance on the canvas.
+  CONFIG.statusEffects.push(
+    { id: 'marrow-bleeding', name: 'MARROW.Bleeding', img: 'icons/svg/blood.svg' },
+    { id: 'marrow-condition', name: 'MARROW.ConditionStatus', img: 'icons/svg/daze.svg' },
+  );
+
   CONFIG.Actor.documentClass = MarrowActor;
   CONFIG.Item.documentClass = MarrowItem;
 
@@ -126,6 +133,25 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
     });
   }
 });
+
+/**
+ * XI.3, XIII.1: a Condition item is easy to miss on a sheet nobody has open, so its token
+ * carries a matching status icon too -- Bleeding gets its own so the running total's danger
+ * is visible without opening the sheet, everything else shares one generic icon.
+ */
+async function syncConditionStatus(actor) {
+  if (!actor) return;
+  const bleeding = (actor.system.bleeding ?? 0) > 0;
+  const other = actor.items.some(i => i.type === 'condition' && !(i.system.bleeding > 0));
+  await actor.toggleStatusEffect('marrow-bleeding', { active: bleeding });
+  await actor.toggleStatusEffect('marrow-condition', { active: other });
+}
+
+for (const hook of ['createItem', 'updateItem', 'deleteItem']) {
+  Hooks.on(hook, (item) => {
+    if (item.type === 'condition') syncConditionStatus(item.actor);
+  });
+}
 
 /**
  * XIII.1: "you take 1 damage every round until it is stopped." Bleeding is the one thing in
