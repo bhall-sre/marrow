@@ -182,6 +182,11 @@
   border-bottom: 1px solid var(--parchment-deep);
 }
 
+/* A Creature has three boxes, not five -- Health, Wounds, Armor, and nothing to leave the
+   other two grid tracks empty for. That left bare --parchment-deep showing through as a
+   band of nothing beside Armor. */
+.marrow.creature .resources { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 .marrow .resource {
   background: var(--parchment);
   padding: 8px 6px 6px;

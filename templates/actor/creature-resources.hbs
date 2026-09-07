@@ -22,15 +22,14 @@
     <div class="sub">{{localize 'MARROW.TakenMax'}}</div>
   </div>
 
-  {{!-- XII.5: AP is a threshold, not a pool, so it is shown as one number and not a bar. --}}
+  {{!-- XII.5: AP is a threshold, not a pool, so it is shown as one number and not a bar. A
+        creature is kept to that one number -- no Damage Reduction row to leave at zero. --}}
   <div class="resource armor">
     <span class="resource-label">{{localize 'MARROW.Armor.Label'}}</span>
     <div class="pair">
       <span class="derived" data-tooltip="{{localize 'MARROW.APHint'}}">{{system.armor.points}}</span>
-      <span class="slash">·</span>
-      <span class="derived" data-tooltip="{{localize 'MARROW.DRHint'}}">{{system.armor.damageReduction}}</span>
     </div>
-    <div class="sub">{{localize 'MARROW.APDR'}} <span class="kind">{{armorKindLabel}}</span></div>
+    <div class="sub">{{localize 'MARROW.ArmorPoints'}} <span class="kind">{{armorKindLabel}}</span></div>
   </div>
 
   {{#if system.bleeding}}

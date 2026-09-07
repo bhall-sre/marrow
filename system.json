@@ -2,7 +2,7 @@
   "id": "marrow",
   "title": "MARROW",
   "description": "A sword-and-sorcery roleplaying game. Stats and Saves rolled under on d100, Health and Wounds, Stress and Panic -- and the Blight, a permanent resource that only ever rises, subtracts from everything you roll, and is the sole source of sorcery in the world. Anyone carrying it may attempt a Working. Weapons beat armor by kind rather than by number. One flat currency: the silver penny.",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -206,6 +206,6 @@
   "secondaryTokenAttribute": "stress",
   "url": "https://github.com/bhall-sre/marrow",
   "manifest": "https://github.com/bhall-sre/marrow/releases/latest/download/system.json",
-  "download": "https://github.com/bhall-sre/marrow/releases/download/0.1.11/marrow.zip",
+  "download": "https://github.com/bhall-sre/marrow/releases/download/0.1.12/marrow.zip",
   "license": "LICENSE"
 }
