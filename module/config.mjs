@@ -160,3 +160,9 @@ MARROW.weaponTags = [
   { key: 'reach',      label: 'MARROW.Tag.Reach',      hint: 'MARROW.Tag.ReachHint' },
   { key: 'twoHanded',  label: 'MARROW.Tag.TwoHanded',  hint: 'MARROW.Tag.TwoHandedHint' },
 ];
+
+/** I.1, I.2: the seven numbers, by key. */
+MARROW.statLabels = {
+  strength: 'Strength', speed: 'Speed', intellect: 'Intellect', combat: 'Combat',
+  sanity: 'Sanity', fear: 'Fear', body: 'Body',
+};

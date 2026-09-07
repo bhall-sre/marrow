@@ -98,10 +98,16 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
   Crests, 4 Classes, 7 Workings, 9 Conditions, 14 tables and 2 Warden-only tables. Document
   ids are a hash of (pack, name), so rebuilding keeps every UUID stable.
 
+- **Character creation** (I) — all nine steps, from the Actors directory. It enforces what
+  MARROW.md states as a mechanic (the dice, the Class adjustments, III's prerequisite rule)
+  and *shows* what it leaves to judgement (each Class's Skills allowance, which is prose).
+  Loadout entries are matched against the compendiums; `tools/check_loadouts.py` reports how
+  many resolve — currently 120 of 154. The remainder are things MARROW.md never stats
+  ("a cat", "a knucklebone it likes") and become gear items carrying their own text, so no
+  entry is ever silently dropped.
+
 ## Not done yet
 
-- **Character creation** (I) — the nine-step flow, including the 2d10+25 / 2d10+10 rolls and
-  the Loadout / Trinket / Crest draws.
 - **Macros** for the common rolls.
 - **Blight triggers on scenes** (XVI.3) — ground types are in `config.mjs` and the Save is
   implemented, but nothing yet ties a Scene to a ground type. You said "fine for now".

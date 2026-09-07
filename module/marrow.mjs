@@ -12,6 +12,7 @@ import { MarrowItemSheet } from './sheets/item-sheet.mjs';
 import { registerHelpers, preloadTemplates } from './helpers.mjs';
 import { registerSettings } from './settings.mjs';
 import { applyDamage } from './dice/damage.mjs';
+import { CharacterCreation, registerCreationButton } from './apps/creation.mjs';
 
 Hooks.once('init', () => {
   console.log('MARROW | The ground is working on you.');
@@ -43,6 +44,10 @@ Hooks.once('init', () => {
     character: { bar: ['health', 'stress'], value: ['wounds.value', 'blight.value', 'armor.points'] },
     companion: { bar: ['wounds'], value: ['combat.total', 'instinct.total', 'loyalty.total'] },
   };
+
+  // I: character creation is its own application, reachable from the Actors directory.
+  CONFIG.MARROW.CharacterCreation = CharacterCreation;
+  registerCreationButton();
 
   registerSheets();
   registerSettings();

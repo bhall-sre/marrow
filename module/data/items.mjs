@@ -147,6 +147,11 @@ export class ClassData extends foundry.abstract.TypeDataModel {
       // II: the Blighted "begin play at Blight 3"
       startingBlight: new fields.NumberField({ required: true, integer: true, initial: 0, min: 0 }),
       grantedSkills: new fields.ArrayField(new fields.StringField()),
+      // II's Skills line, verbatim. The named Skills above are granted automatically; the
+      // rest of the line ("one Expert Skill, or two Trained Skills", "one Trained Skill
+      // from the life you had before this happened") asks for a judgement no schema can
+      // make, so it is shown to the player rather than modelled.
+      skillsNote: new fields.HTMLField(),
       // V, VI, VII
       tables: new fields.SchemaField({
         loadout: new fields.StringField(),

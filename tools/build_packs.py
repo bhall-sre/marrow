@@ -228,6 +228,40 @@ def build_armor() -> dict:
             "notes": "",
         })
 
+    docs.update(build_garments(docs))
+    return docs
+
+
+def build_garments(existing: dict) -> dict:
+    """VIII.3's closing sentence: "Also worn, all AP 1 and all Soft: parade coats, liveries,
+    physician's robes, aprons, burgher's coats, pilgrim's weeds, and whatever you sleep in."
+
+    That is a real list of real armour, and the Loadout tables name each garment with its
+    Armor Points in brackets -- "Parade coat (AP 1)", "Bedclothes (AP 1)". So both the name
+    and the number come out of MARROW.md; this only collects them.
+    """
+    note = next(l for l in ms.section("VIII.3 ARMOR") if l.startswith("Also worn"))
+    docs = {}
+
+    text = chr(10).join(ms.section("V. LOADOUTS"))
+    pattern = r"([A-Z][A-Za-z' -]+?)\s*\(AP (\d+)\)"
+    for name, ap in sorted(set(re.findall(pattern, text))):
+        name = name.strip()
+        if name in existing or name in docs:
+            continue
+        docs[name] = item("armor", name, "armor", {
+            "description": f"<p>{note}</p>",
+            "cost": 0,
+            "armorPoints": int(ap),
+            "damageReduction": 0,
+            "kind": "soft",
+            "isShield": False,
+            "warded": False,
+            "heavy": False,
+            "destroyed": False,
+            "equipped": False,
+            "notes": "VIII.3",
+        })
     return docs
 
 
@@ -366,6 +400,7 @@ def build_classes() -> dict:
             "choice": choice,
             "startingBlight": int(blight.group(1)) if blight else 0,
             "grantedSkills": granted,
+            "skillsNote": Marrow.html(skills_line.replace("**Skills:**", "").strip()),
             "tables": {
                 "loadout": CLASS_TABLES[name],
                 "trinket": "Trinkets",

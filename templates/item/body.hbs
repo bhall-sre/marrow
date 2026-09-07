@@ -4,7 +4,7 @@
   {{!-- III. --}}
   <div class="fields">
     <label class="field">
-      <span>{{localize 'MARROW.Rank'}}</span>
+      <span>{{localize 'MARROW.RankLabel'}}</span>
       <select name="system.rank">
         {{#each MARROW.skillRanks as |rank key|}}
           <option value="{{key}}" {{selected (eq key ../system.rank)}}>{{rank.label}} +{{rank.bonus}}</option>

@@ -14,14 +14,12 @@
       "condition": "Condition"
     }
   },
-
   "MARROW": {
     "Sheet": {
       "Character": "MARROW Character",
       "Companion": "MARROW Retainer",
       "Item": "MARROW Item"
     },
-
     "Unnamed": "Unnamed",
     "ClassLabel": "Class",
     "DropAClass": "Drag a Class here",
@@ -31,7 +29,6 @@
     "TallyHint": "The jobs you have walked away from. It does nothing at all.",
     "Occupation": "Occupation",
     "Wage": "Wage",
-
     "Health": "Health",
     "Wounds": "Wounds",
     "StressLabel": "Stress",
@@ -44,7 +41,11 @@
     "Ammo": "Ammo",
     "Quantity": "Quantity",
     "CategoryLabel": "Category",
-    "Rank": "Rank",
+    "Rank": {
+      "trained": "Trained",
+      "expert": "Expert",
+      "master": "Master"
+    },
     "Prerequisites": "Requires",
     "Or": "or",
     "ArmorPoints": "Armor Points",
@@ -61,13 +62,11 @@
     "Notes": "Notes",
     "Adjustments": "Adjustments",
     "TraumaResponse": "Trauma Response",
-
     "CurrentMax": "Current / Maximum",
     "CurrentMin": "Current / Minimum",
     "TakenMax": "Taken / Maximum",
     "APDR": "AP · DR",
     "AnyDamageIsAWound": "Any damage taken is one Wound",
-
     "Stats": "Stats",
     "Saves": "Saves",
     "Numbers": "Numbers",
@@ -76,7 +75,6 @@
       "Fear": "Fear",
       "Body": "Body"
     },
-
     "Add": "Add",
     "Edit": "Edit",
     "DeleteLabel": "Delete",
@@ -93,7 +91,6 @@
     "SelectATarget": "Select the token this damage lands on.",
     "ApplyDirect": "Apply, ignoring armor",
     "ApplyDirectHint": "For Bleeding and for attacks that bypass armor and Damage Reduction entirely.",
-
     "APHint": "You ignore all damage less than your Armor Points. A hit that meets or beats them destroys the armor and the remainder goes into you.",
     "DRHint": "Damage Reduction always subtracts first, and keeps working after the armor is gone.",
     "AAHint": "Anti-Armor: ignores and destroys armor on any hit.",
@@ -103,14 +100,12 @@
     "BleedingHint": "Damage per round, cumulative, ignoring armor and Damage Reduction.",
     "RestHint": "Rest: a Save on your worst Save. On a success, shed the ones digit of the roll.",
     "MinStressHint": "Your Minimum Stress, including anything the Blight is adding.",
-
     "Empty": {
       "Skills": "No Skills. Remember what you do not know.",
       "Weapons": "Unarmed.",
       "Armor": "Nothing between you and it.",
       "Workings": "No Workings recorded."
     },
-
     "Tab": {
       "Skills": "Skills",
       "Arms": "Arms",
@@ -124,14 +119,12 @@
       "Hire": "Terms",
       "Kit": "Kit"
     },
-
     "Category": {
       "Gear": "Gear",
       "Treatment": "Treatments",
       "Trinket": "Trinkets",
       "Crest": "Crests"
     },
-
     "Tag": {
       "AntiArmor": "Anti-Armor",
       "AntiArmorHint": "Ignores and destroys armor on any hit.",
@@ -144,7 +137,6 @@
       "TwoHanded": "Two-Handed",
       "TwoHandedHint": "No shield, no free hand."
     },
-
     "Adjust": {
       "strength": "Strength",
       "speed": "Speed",
@@ -155,11 +147,9 @@
       "body": "Body Save",
       "maxWounds": "Maximum Wounds"
     },
-
     "Matchup": {
       "Ignores": "Ignores the armor matchup entirely."
     },
-
     "Roll": {
       "Rest": "Rest",
       "Panic": "Panic Check",
@@ -169,37 +159,31 @@
       "Trinket": "Roll Trinket",
       "Crest": "Roll Crest"
     },
-
     "Outcome": {
       "criticalSuccess": "Critical Success",
       "success": "Success",
       "failure": "Failure",
       "criticalFailure": "Critical Failure"
     },
-
     "Reason": {
       "Situational": "The situation",
       "Consumed": "Consumed: [-] on all Body Saves",
       "Shorted": "Wages shorted"
     },
-
     "Consequence": {
       "FailStress": "Gain 1 Stress.",
       "CriticalPanic": "Critical Failure — make a Panic Check.",
       "RestRelief": "Shed {n} Stress.",
       "StressOverflow": "Stress is at its maximum. {n} over — reduce the most relevant Stat or Save by that amount."
     },
-
     "Panic": {
       "Held": "Held.",
       "Broke": "Consult the Panic Table."
     },
-
     "Death": {
       "Save": "Death Save",
       "FaceDown": "{name}'s Death Save is face down on the table. It is revealed only when somebody spends a turn checking the body."
     },
-
     "Blight": {
       "Label": "Blight",
       "Gain": "Blight gained",
@@ -223,7 +207,6 @@
         "undone": "You die in 1d5 days. Nothing prevents it and nothing delays it. Spend the days well."
       }
     },
-
     "Working": {
       "Attempt": "Working — {name}",
       "NeedsBlight": "A Working needs a Blight Level of 1 or higher.",
@@ -238,7 +221,6 @@
         "criticalFailure": "It works, and something comes through alongside it."
       }
     },
-
     "Retainer": {
       "Motivation": "Motivation",
       "MotivationHint": "Only the memorable ones need one.",
@@ -253,18 +235,15 @@
       "Beneficiary": "Beneficiary",
       "Guilded": "Guilded"
     },
-
     "Class": {
       "ChoiceNote": "This class lets you place one adjustment yourself:",
       "StartingBlight": "Begins play at Blight",
       "Tables": "Starting rolls",
       "MissingSkill": "This class grants the Skill \"{name}\", which is not in the Skills compendium."
     },
-
     "Table": {
       "Missing": "No roll table named \"{name}\" was found in the world or in MARROW's compendiums."
     },
-
     "Dialog": {
       "Check": "Check",
       "CheckTitle": "{name}",
@@ -282,7 +261,6 @@
       "DeleteTitle": "Delete {name}?",
       "DeleteBody": "Delete {name}? This cannot be undone."
     },
-
     "Settings": {
       "AutoBleed": "Bleed automatically",
       "AutoBleedHint": "At the start of a bleeding character's turn, apply their Bleeding damage without being asked.",
@@ -290,6 +268,23 @@
       "AutoPanicHint": "Roll the Panic Check automatically whenever a Check comes up a Critical Failure.",
       "AutoStress": "Stress on a failure",
       "AutoStressHint": "Add the 1 Stress a failed Stat Check or Save costs, without being asked."
-    }
+    },
+    "Creation": {
+      "Title": "Making Your Character",
+      "Button": "New MARROW Character",
+      "Create": "Make the character",
+      "Numbers": "Roll your numbers",
+      "RerollAll": "Roll again",
+      "Class": "Choose your Class",
+      "Skills": "Take your Skills",
+      "Finish": "Name yourself",
+      "Name": "Name",
+      "RollKit": "Roll Loadout, Trinket and Crest",
+      "NoClasses": "The Classes compendium is not available.",
+      "ChoiceSummary": "{amount} to one Stat of your choice",
+      "BlightSummary": "begins at Blight {n}",
+      "BlightNote": "This class begins play carrying the Blight. Every level is a permanent -1 to all Stats and all Saves, and it only goes up."
+    },
+    "RankLabel": "Rank"
   }
 }

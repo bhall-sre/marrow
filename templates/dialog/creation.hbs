@@ -1,0 +1,169 @@
+{{!--
+  MARROW.md I. Nine steps, in order, on one page -- I.1 says "Roll fast and start playing",
+  so everything is already rolled by the time this opens.
+--}}
+<div class="creation-body">
+
+  {{!-- I.1, I.2, I.4, I.8 --}}
+  <section class="step">
+    <div class="step-head">
+      <h3>{{localize 'MARROW.Creation.Numbers'}}</h3>
+      <button type="button" data-action="rerollAll">
+        <i class="fa-solid fa-dice"></i> {{localize 'MARROW.Creation.RerollAll'}}</button>
+    </div>
+
+    <div class="roll-grid">
+      {{#each rolls.stats as |value key|}}
+        <div class="rolled">
+          <span class="rolled-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
+          <span class="rolled-value">{{value}}</span>
+          <button type="button" data-action="rerollOne" data-group="stats"
+                  data-key="{{key}}" data-formula="2d10+25"
+                  data-tooltip="2d10+25"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+      {{/each}}
+      {{#each rolls.saves as |value key|}}
+        <div class="rolled save">
+          <span class="rolled-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
+          <span class="rolled-value">{{value}}</span>
+          <button type="button" data-action="rerollOne" data-group="saves"
+                  data-key="{{key}}" data-formula="2d10+10"
+                  data-tooltip="2d10+10"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+      {{/each}}
+      <div class="rolled">
+        <span class="rolled-label">{{localize 'MARROW.Health'}}</span>
+        <span class="rolled-value">{{rolls.health}}</span>
+        <button type="button" data-action="rerollOne" data-group="root"
+                data-key="health" data-formula="1d10+10"
+                data-tooltip="1d10+10"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+      <div class="rolled">
+        <span class="rolled-label">{{localize 'MARROW.Silver'}}</span>
+        <span class="rolled-value">{{rolls.silver}}</span>
+        <button type="button" data-action="rerollOne" data-group="root"
+                data-key="silver" data-formula="2d10"
+                data-tooltip="2d10 &times; 10"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+    </div>
+  </section>
+
+  {{!-- I.3 --}}
+  <section class="step">
+    <div class="step-head"><h3>{{localize 'MARROW.Creation.Class'}}</h3></div>
+    <div class="class-cards">
+      {{#each classes as |c|}}
+        <button type="button" class="class-card{{#if c.selected}} selected{{/if}}"
+                data-action="pickClass" data-class-id="{{c.id}}">
+          <img src="{{c.img}}" alt="{{c.name}}" />
+          <span class="class-name">{{c.name}}</span>
+          <span class="class-summary">{{c.summary}}</span>
+        </button>
+      {{else}}
+        <p class="notice">{{localize 'MARROW.Creation.NoClasses'}}</p>
+      {{/each}}
+    </div>
+
+    {{#if chosenClass.choice}}
+      <fieldset class="situational{{#if chosenClass.choice.isPenalty}} penalty{{/if}}">
+        <legend>
+          {{#if chosenClass.choice.isPenalty}}
+            {{localize 'MARROW.Dialog.ChoosePenalty'}}
+          {{else}}
+            {{localize 'MARROW.Dialog.ChooseBonus'}}
+          {{/if}}
+          {{numberFormat chosenClass.choice.amount sign=true}}
+        </legend>
+        {{#each chosenClass.choice.options as |opt|}}
+          <label><input type="radio" name="choice" value="{{opt.key}}"
+                        {{checked opt.selected}} /> {{opt.label}}</label>
+        {{/each}}
+      </fieldset>
+    {{/if}}
+  </section>
+
+  {{!-- I.7 --}}
+  {{#if chosenClass}}
+    <section class="step">
+      <div class="step-head"><h3>{{localize 'MARROW.Creation.Skills'}}</h3></div>
+
+      {{!-- II's allowance is prose, so it is shown rather than enforced. --}}
+      <div class="notice allowance">{{{chosenClass.skillsNote}}}</div>
+
+      {{#each skillsByRank as |list rank|}}
+        <h4 class="rank-head">{{localize (concat 'MARROW.Rank.' rank)}}</h4>
+        <div class="skill-grid">
+          {{#each list as |s|}}
+            <button type="button"
+                    class="skill-chip{{#if s.chosen}} chosen{{/if}}{{#if s.granted}} granted{{/if}}{{#unless s.available}} unavailable{{/unless}}"
+                    data-action="toggleSkill" data-skill="{{s.name}}"
+                    {{#if s.locked}}disabled{{/if}}
+                    {{#if s.prerequisites.length}}data-tooltip="{{localize 'MARROW.Prerequisites'}} {{join s.prerequisites (localize 'MARROW.Or')}}"{{/if}}>
+              {{s.name}} <span class="chip-bonus">+{{s.bonus}}</span>
+              {{#if s.granted}}<i class="fa-solid fa-lock"></i>{{/if}}
+            </button>
+          {{/each}}
+        </div>
+      {{/each}}
+    </section>
+  {{/if}}
+
+  {{!-- I.9, and the preview of what all of the above adds up to --}}
+  <section class="step">
+    <div class="step-head"><h3>{{localize 'MARROW.Creation.Finish'}}</h3></div>
+
+    <div class="fields">
+      <label class="field">
+        <span>{{localize 'MARROW.Creation.Name'}}</span>
+        <input type="text" name="name" placeholder="{{localize 'MARROW.Unnamed'}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Pronouns'}}</span>
+        <input type="text" name="pronouns" />
+      </label>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" name="rollKit" checked />
+      <span>{{localize 'MARROW.Creation.RollKit'}}</span>
+    </label>
+
+    <div class="preview">
+      {{#each preview.stats as |s key|}}
+        <div class="preview-cell">
+          <span class="preview-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
+          <span class="preview-value{{#if ../preview.blight}} blighted{{/if}}">{{s.total}}</span>
+        </div>
+      {{/each}}
+      {{#each preview.saves as |s key|}}
+        <div class="preview-cell save">
+          <span class="preview-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
+          <span class="preview-value{{#if ../preview.blight}} blighted{{/if}}">{{s.total}}</span>
+        </div>
+      {{/each}}
+      <div class="preview-cell">
+        <span class="preview-label">{{localize 'MARROW.Health'}}</span>
+        <span class="preview-value">{{preview.health}}</span>
+      </div>
+      <div class="preview-cell">
+        <span class="preview-label">{{localize 'MARROW.Wounds'}}</span>
+        <span class="preview-value">{{preview.wounds}}</span>
+      </div>
+      <div class="preview-cell">
+        <span class="preview-label">{{localize 'MARROW.StressLabel'}}</span>
+        <span class="preview-value">{{preview.stress}}</span>
+      </div>
+      {{#if preview.blight}}
+        <div class="preview-cell blight">
+          <span class="preview-label">{{localize 'MARROW.Blight.Label'}}</span>
+          <span class="preview-value">{{preview.blight}}</span>
+        </div>
+      {{/if}}
+    </div>
+
+    {{#if preview.blight}}
+      <p class="notice">{{localize 'MARROW.Creation.BlightNote'}}</p>
+    {{/if}}
+  </section>
+
+</div>
