@@ -29,8 +29,28 @@ const log = (cls, msg) => {
 const head = (t) => { const h = document.createElement('h2'); h.textContent = t; out.appendChild(h); };
 
 // --- the stub -------------------------------------------------------------
+const fieldProblems = [];
+
 class StubField { constructor(o = {}) { this.options = o; } }
-const field = () => StubField;
+
+/*
+  StringField refuses the empty string unless `blank: true`, however the choices are
+  written -- listing '' in `choices` is not enough. Getting that wrong throws
+  "may not be a blank string" the moment a document carrying '' is created, which for a
+  compendium item means it cannot be dragged onto a sheet at all.
+*/
+class StubStringField extends StubField {
+  constructor(o = {}) {
+    super(o);
+    const choices = Array.isArray(o.choices) ? o.choices : Object.keys(o.choices ?? {});
+    const allowsBlank = o.blank === true;
+    if ((choices.includes('') || o.initial === '') && !allowsBlank) {
+      fieldProblems.push(
+        `StringField allows '' (choices: [${choices.map(c => `'${c}'`).join(', ')}]`
+        + `, initial: '${o.initial ?? ''}') but is missing blank: true`);
+    }
+  }
+}
 
 class TypeDataModel {
   static defineSchema() { return {}; }
@@ -52,7 +72,7 @@ const registered = { sheets: [], settings: [], hooks: [] };
 
 globalThis.foundry = {
   abstract: { TypeDataModel },
-  data: { fields: new Proxy({}, { get: () => StubField }) },
+  data: { fields: new Proxy({}, { get: (_, name) => name === 'StringField' ? StubStringField : StubField }) },
   utils: { isEmpty: (o) => !o || !Object.keys(o).length, deepClone: structuredClone,
            getProperty: () => 0, mergeObject: Object.assign },
   applications: {
@@ -122,7 +142,20 @@ String.prototype.capitalize ??= function () { return this.charAt(0).toUpperCase(
   log('ok', `data models: Actor [${Object.keys(CONFIG.Actor.dataModels || {})}] `
           + `Item [${Object.keys(CONFIG.Item.dataModels || {})}]`);
 
-  head('4. Compile every template');
+  head('4. Build every data model schema');
+  const models = { ...(CONFIG.Actor.dataModels || {}), ...(CONFIG.Item.dataModels || {}) };
+  for (const [name, cls] of Object.entries(models)) {
+    try { cls.defineSchema(); }
+    catch (err) { log('bad', `${name}.defineSchema() threw
+  ${err.message}`); }
+  }
+  if (fieldProblems.length) {
+    for (const p of fieldProblems) log('bad', p);
+  } else {
+    log('ok', `ok - ${Object.keys(models).length} schemas build, no blank-string traps`);
+  }
+
+  head('5. Compile every template');
   const templates = TEMPLATES;
   let bad = 0;
   for (const path of templates) {

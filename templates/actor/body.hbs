@@ -17,15 +17,6 @@
       {{/each}}
     </ul>
 
-    {{#if items.class.length}}
-      <div class="section-head"><h3>{{localize 'MARROW.Tab.Class'}}</h3></div>
-      <ul class="item-list">
-        {{#each items.class as |item|}}
-          {{> "marrow.item-row" item=item detail=""}}
-        {{/each}}
-      </ul>
-    {{/if}}
-
     {{#if items.condition.length}}
       {{!-- XI.3: "permanent until treated ... They follow you into every session." --}}
       <div class="section-head"><h3>{{localize 'MARROW.Tab.Conditions'}}</h3></div>

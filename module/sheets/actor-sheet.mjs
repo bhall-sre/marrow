@@ -29,6 +29,7 @@ export class MarrowActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       blightExposure: MarrowActorSheet.#onBlightExposure,
       adjust: MarrowActorSheet.#onAdjust,
       selectTab: MarrowActorSheet.#onSelectTab,
+      generate: MarrowActorSheet.#onGenerate,
     },
   };
 
@@ -84,6 +85,12 @@ export class MarrowActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return Object.entries(this.constructor.TABS ?? {}).map(([id, tab]) => ({
       ...tab, id, active: id === active,
     }));
+  }
+
+  /** I, the nine steps, run against this character rather than a new one. */
+  static async #onGenerate() {
+    const { CharacterCreation } = await import('../apps/creation.mjs');
+    return new CharacterCreation({ actor: this.document }).render(true);
   }
 
   static async #onSelectTab(event, target) {

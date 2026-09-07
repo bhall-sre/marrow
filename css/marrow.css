@@ -1181,3 +1181,25 @@
 }
 
 .marrow .marrow-create-character:hover { background: var(--blood); }
+
+/* The name and the Generate button share a row in the header. */
+.marrow .name-row { display: flex; align-items: center; gap: 10px; }
+.marrow .name-row .name { flex: 1 1 0; min-width: 0; }
+
+.marrow .marrow-header .generate {
+  flex: 0 0 auto;
+  width: auto;
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  background: transparent;
+  border: 1px solid var(--brass);
+  border-radius: 2px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.marrow .marrow-header .generate:hover { background: var(--blood); border-color: var(--blood); }

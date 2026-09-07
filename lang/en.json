@@ -283,7 +283,12 @@
       "NoClasses": "The Classes compendium is not available.",
       "ChoiceSummary": "{amount} to one Stat of your choice",
       "BlightSummary": "begins at Blight {n}",
-      "BlightNote": "This class begins play carrying the Blight. Every level is a permanent -1 to all Stats and all Saves, and it only goes up."
+      "BlightNote": "This class begins play carrying the Blight. Every level is a permanent -1 to all Stats and all Saves, and it only goes up.",
+      "Generate": "Generate",
+      "GenerateHint": "Roll this character: Stats, Saves, Health, silver, Class, Skills, Loadout, Trinket and Crest.",
+      "Regenerate": "Replace this character",
+      "ReplaceTitle": "Replace this character?",
+      "ReplaceBody": "This rolls {name} again from scratch. Their numbers, Class, Skills and everything they are carrying will be replaced."
     },
     "RankLabel": "Rank"
   }

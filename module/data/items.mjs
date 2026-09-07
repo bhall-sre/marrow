@@ -44,7 +44,8 @@ export class WeaponData extends foundry.abstract.TypeDataModel {
       // VIII.2 lists arrows and bolts among the weapons with no range of their own, so ''
       // is allowed and reads as a dash.
       range: new fields.StringField({
-        required: true, initial: 'adjacent', choices: ['', ...Object.keys(MARROW.ranges)],
+        required: true, blank: true, initial: 'adjacent',
+        choices: ['', ...Object.keys(MARROW.ranges)],
       }),
       // "Ammo is what you have ready."
       ammo: new fields.SchemaField({
@@ -58,7 +59,11 @@ export class WeaponData extends foundry.abstract.TypeDataModel {
       reach: new fields.BooleanField({ initial: false }),
       twoHanded: new fields.BooleanField({ initial: false }),
       // a handful of weapons carry their own [+]/[-], unrelated to the armour matchup
-      innate: new fields.StringField({ initial: '', choices: ['', 'advantage', 'disadvantage'] }),
+      // blank: true, or the empty choice below is rejected -- StringField refuses '' by
+      // default however the choices are written.
+      innate: new fields.StringField({
+        blank: true, initial: '', choices: ['', 'advantage', 'disadvantage'],
+      }),
       equipped: new fields.BooleanField({ initial: false }),
       notes: new fields.StringField(),
     };
@@ -86,7 +91,9 @@ export class ArmorData extends foundry.abstract.TypeDataModel {
       armorPoints: new fields.NumberField({ required: true, integer: true, initial: 1, min: 0 }),
       damageReduction: new fields.NumberField({ required: true, integer: true, initial: 0, min: 0 }),
       // left blank, kind is derived from AP -- every armour in VIII.3 agrees with its band
-      kind: new fields.StringField({ initial: '', choices: ['', ...Object.keys(MARROW.armorKinds)] }),
+      kind: new fields.StringField({
+        blank: true, initial: '', choices: ['', ...Object.keys(MARROW.armorKinds)],
+      }),
       isShield: new fields.BooleanField({ initial: false }),
       // VIII.3: the warded cloak "Removes the Disadvantage on Blight Saves."
       warded: new fields.BooleanField({ initial: false }),

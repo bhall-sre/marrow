@@ -40,8 +40,14 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
     footer: { template: 'templates/generic/form-footer.hbs' },
   };
 
+  /**
+   * @param {object}  [options]
+   * @param {Actor}   [options.actor]  regenerate this character in place. Without one, a new
+   *                                   character is created on submit.
+   */
   constructor(options = {}) {
     super(options);
+    this.actor = options.actor ?? null;
     this.rolls = null;
     this.classId = null;
     this.choice = null;
@@ -103,9 +109,10 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
       } : null,
       skillsByRank: this.#skillsByRank(chosen),
       preview: this.#preview(chosen),
+      existing: this.actor ? { name: this.actor.name, pronouns: this.actor.system.pronouns } : null,
       buttons: [
-        { type: 'submit', icon: 'fa-solid fa-feather', label: 'MARROW.Creation.Create',
-          disabled: !this.classId },
+        { type: 'submit', icon: 'fa-solid fa-feather', disabled: !this.classId,
+          label: this.actor ? 'MARROW.Creation.Regenerate' : 'MARROW.Creation.Create' },
       ],
     };
   }
@@ -250,26 +257,44 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
     const chosen = this.classes.find(c => c.id === this.classId);
     if (!chosen) return;
 
-    const name = (data.name || '').trim() || game.i18n.localize('MARROW.Unnamed');
+    const name = (data.name || '').trim()
+      || this.actor?.name
+      || game.i18n.localize('MARROW.Unnamed');
 
-    // I.1-I.5, I.9. The Class's adjustments are applied afterwards by applyClass, so what
-    // is created here is the character before the Class touches them.
-    const actor = await Actor.create({
-      name,
-      type: 'character',
-      system: {
-        pronouns: data.pronouns ?? '',
-        stats: Object.fromEntries(
-          Object.entries(this.rolls.stats).map(([k, v]) => [k, { value: v }])),
-        saves: Object.fromEntries(
-          Object.entries(this.rolls.saves).map(([k, v]) => [k, { value: v }])),
-        health: { value: this.rolls.health, max: this.rolls.health },
-        wounds: { value: 0, max: 2 },
-        stress: { value: 2, base: 2, max: 20 },
-        silver: this.rolls.silver,
-        tally: 0,                                    // I.9
-      },
-    });
+    // I.1-I.5, I.9. The Class's adjustments are applied afterwards by applyClass, so what is
+    // written here is the character before the Class touches them.
+    const system = {
+      pronouns: data.pronouns ?? '',
+      stats: Object.fromEntries(
+        Object.entries(this.rolls.stats).map(([k, v]) => [k, { value: v }])),
+      saves: Object.fromEntries(
+        Object.entries(this.rolls.saves).map(([k, v]) => [k, { value: v }])),
+      health: { value: this.rolls.health, max: this.rolls.health },
+      wounds: { value: 0, max: 2 },
+      stress: { value: 2, base: 2, max: 20 },
+      blight: { value: 0, marked: 0 },
+      silver: this.rolls.silver,
+      tally: 0,                                      // I.9
+    };
+
+    let actor = this.actor;
+
+    if (actor) {
+      // Regenerating replaces the character. Say so before doing it.
+      if (actor.items.size) {
+        const ok = await foundry.applications.api.DialogV2.confirm({
+          window: { title: game.i18n.localize('MARROW.Creation.ReplaceTitle') },
+          content: `<p>${game.i18n.format('MARROW.Creation.ReplaceBody', { name: actor.name })}</p>`,
+        });
+        if (!ok) return;
+        await actor.deleteEmbeddedDocuments('Item', actor.items.map(i => i.id));
+      }
+      // Clear the record of the old Class's adjustments before writing fresh numbers, so
+      // applyClass has nothing to subtract from a set of Stats that never had it added.
+      await actor.update({ name, system, 'flags.marrow.-=classAdjustments': null });
+    } else {
+      actor = await Actor.create({ name, type: 'character', system });
+    }
 
     // I.3 and I.7: the Class, its adjustments, and the Skills it grants.
     await chosen.applyClass(actor, { choice: this.choice });
