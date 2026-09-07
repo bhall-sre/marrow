@@ -25,7 +25,8 @@ export class CheckDialog {
    * @param {string} [options.flavor]
    * @returns {Promise<object|null>} the Check result, or null if cancelled
    */
-  static async prompt(actor, { key = null, skill = null, kind = 'check', flavor = '' } = {}) {
+  static async prompt(actor, { key = null, skill = null, kind = 'check', flavor = '',
+                              sources: given = [] } = {}) {
     const applicable = actor.items
       .filter(i => i.type === 'skill')
       .sort((a, b) => b.system.bonus - a.system.bonus || a.name.localeCompare(b.name));
@@ -50,6 +51,13 @@ export class CheckDialog {
         selectedSkill: skill?.id ?? '',
         // Shown, not chosen: the player cannot switch these off (XVI.1, XX).
         innate: key ? (actor.system.hasDisadvantageOn?.(key) ?? false) : false,
+        // VIII.1's matchup and a weapon's own [+]/[-] are facts about the attack, so they
+        // are listed rather than offered.
+        given: given.filter(s => s?.effect).map(s => ({
+          source: s.source,
+          effect: s.effect,
+          mark: s.effect === ADVANTAGE ? '[+]' : '[-]',
+        })),
         MARROW,
       },
     );
@@ -70,7 +78,7 @@ export class CheckDialog {
     const chosenKey = key ?? answer.get('key');
     if (!chosenKey) return null;
 
-    const sources = [];
+    const sources = [...given];
     if (situational === ADVANTAGE || situational === DISADVANTAGE) {
       sources.push({ source: game.i18n.localize('MARROW.Reason.Situational'), effect: situational });
     }

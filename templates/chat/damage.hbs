@@ -18,15 +18,16 @@
 
   {{#if targetName}}<div class="target-line">{{localize 'MARROW.Against'}} {{targetName}}</div>{{/if}}
 
+  {{#if weapon.system.notes}}
+    {{!-- VIII.2's per-weapon riders -- "Body Save or entangled", "or set alight" -- need a
+          Save and a ruling, so they are put in front of the Warden rather than applied. --}}
+    <div class="weapon-rider">{{weapon.system.notes}}</div>
+  {{/if}}
+
   <div class="card-buttons">
     <button type="button" data-action="applyDamage" data-amount="{{total}}"
             data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}">
       {{localize 'MARROW.Apply'}}
-    </button>
-    <button type="button" data-action="applyDamage" data-amount="{{total}}"
-            data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}" data-ignore-armor="true"
-            data-tooltip="{{localize 'MARROW.ApplyDirectHint'}}">
-      {{localize 'MARROW.ApplyDirect'}}
     </button>
   </div>
 

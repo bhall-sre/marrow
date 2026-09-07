@@ -205,7 +205,7 @@ def build_armor() -> dict:
             # VIII.3: "Removes the Disadvantage on Blight Saves."
             "warded": "Disadvantage on Blight Saves" in notes,
             "heavy": "Heavy" in notes,
-            "destroyed": False,
+            "state": "intact",
             "equipped": False,
             "notes": "",
         })
@@ -223,7 +223,7 @@ def build_armor() -> dict:
             "isShield": True,
             "warded": False,
             "heavy": False,
-            "destroyed": False,
+            "state": "intact",
             "equipped": False,
             "notes": "",
         })
@@ -258,7 +258,7 @@ def build_garments(existing: dict) -> dict:
             "isShield": False,
             "warded": False,
             "heavy": False,
-            "destroyed": False,
+            "state": "intact",
             "equipped": False,
             "notes": "VIII.3",
         })

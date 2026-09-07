@@ -32,7 +32,10 @@
     "Health": "Health",
     "Wounds": "Wounds",
     "StressLabel": "Stress",
-    "Armor": "Armor",
+    "Armor": {
+      "Label": "Armor",
+      "Destroyed": "{name}'s armor is destroyed ({n})."
+    },
     "Bleeding": "Bleeding",
     "Damage": "Damage",
     "DamageType": "Wound Type",
@@ -89,8 +92,6 @@
     "Neither": "Neither",
     "Cancelled": "They cancel each other out",
     "SelectATarget": "Select the token this damage lands on.",
-    "ApplyDirect": "Apply, ignoring armor",
-    "ApplyDirectHint": "For Bleeding and for attacks that bypass armor and Damage Reduction entirely.",
     "APHint": "You ignore all damage less than your Armor Points. A hit that meets or beats them destroys the armor and the remainder goes into you.",
     "DRHint": "Damage Reduction always subtracts first, and keeps working after the armor is gone.",
     "AAHint": "Anti-Armor: ignores and destroys armor on any hit.",
@@ -291,6 +292,16 @@
       "PickClassFirst": "Choose a Class first",
       "RollEverythingFirst": "Roll every number first"
     },
-    "RankLabel": "Rank"
+    "RankLabel": "Rank",
+    "ArmorState": {
+      "intact": "Intact",
+      "destroyed": "Destroyed",
+      "patched": "Patched (AP 1)"
+    },
+    "Repair": "Repair",
+    "PatchHint": "A leatherworker's kit patches torn armor back to serviceable, but patched armor has AP 1 until a proper smith sees it.",
+    "SmithHint": "A smith restores full AP for a quarter of the armor's price and a week's work.",
+    "Condition": "Condition",
+    "CurrentAP": "Current AP"
   }
 }

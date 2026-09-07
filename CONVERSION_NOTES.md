@@ -61,6 +61,28 @@ the omission is deliberate.
 
 ---
 
+### 6. Armour has no hit points — *VIII.3, XII.5*
+
+Asked for, and not in the text. XII.5 destroys armour outright: "if a single hit deals
+damage **equal to or greater than** your AP, the armor is destroyed." There is no wearing
+down, and a hit below AP does nothing at all. What VIII.3 *does* give is three states, so
+that is what is implemented: **intact** → **destroyed** (AP 0, Damage Reduction still
+working) → **patched** (AP 1, from a leatherworker's kit) → **intact** (a smith, for a
+quarter of the armour's price and a week). Destruction is automatic; the two repairs are
+purchases and stay manual.
+
+### 7. A weapon's Wound column is not a Condition — *VIII.2, XIII, XIII.1*
+
+A longsword's Wound column reads "Bleeding" because that is the column you roll on when it
+takes you to zero Health. It is not a claim that every longsword hit makes you bleed.
+Bleeding is applied when a Wound **result** says "Bleeding +N", and from nothing else.
+
+`module/dice/effects.mjs` reads each Wound and Panic result and does what it says — Bleeding,
+Minimum Stress, Stress gained or shed, Stats and Saves reduced, Maximum Health reduced,
+Conditions, and Death Saves. 54 of the 70 rows carry a recognised effect; the rest are pure
+description ("Rib broken"). Anything a row states that needs a Save or a ruling — "Body Save
+or entangled" — is surfaced on the card rather than applied.
+
 ## Deliberate departures from the old system
 
 This is a rebuild, not a port, so a few things that existed before are gone on purpose:

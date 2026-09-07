@@ -1301,3 +1301,31 @@
 
 .marrow .creation-footer .create:hover:not(:disabled) { background: var(--blood); }
 .marrow .creation-footer .create:disabled { opacity: .4; cursor: default; }
+
+/* VIII.1's matchup, stated in the roll dialog rather than offered as a choice. */
+.marrow .given-sources {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 6px 9px;
+  font-size: .8rem;
+  background: rgba(138, 111, 60, .12);
+  border-left: 3px solid var(--brass);
+}
+
+.marrow .given-sources li { display: flex; gap: 6px; }
+.marrow .given-sources .mark { font-weight: 700; }
+.marrow .given-sources .advantage .mark { color: var(--brass); }
+.marrow .given-sources .disadvantage .mark { color: var(--blood); }
+
+/* VIII.2's per-weapon riders, which need a Save and a ruling. */
+.marrow.chat-card .weapon-rider {
+  margin-top: 6px;
+  padding: 5px 8px;
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  background: rgba(138, 111, 60, .12);
+  border-left: 3px solid var(--brass);
+}
+
+.marrow .effective-ap { font-family: var(--font-display); font-size: 1.1rem; }

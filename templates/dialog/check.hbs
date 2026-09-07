@@ -37,6 +37,15 @@
     </select>
   </label>
 
+  {{#if given.length}}
+    {{!-- VIII.1's armour matchup, and any [+]/[-] the weapon itself carries. --}}
+    <ul class="given-sources">
+      {{#each given as |g|}}
+        <li class="{{g.effect}}"><span class="mark">{{g.mark}}</span> {{g.source}}</li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
   <fieldset class="situational">
     <legend>{{localize 'MARROW.Dialog.Situational'}}</legend>
     <label><input type="radio" name="situational" value="advantage" /> [+] {{localize 'MARROW.Advantage'}}</label>

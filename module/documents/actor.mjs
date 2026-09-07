@@ -61,11 +61,18 @@ export class MarrowActor extends Actor {
       sources.push({ source: weapon.name, effect: weapon.system.innate });
     }
 
-    const result = await new MarrowCheck(this, {
-      key: 'combat',
-      sources,
-      flavor: game.i18n.format('MARROW.Roll.AttackWith', { weapon: weapon.name }),
-    }).evaluate();
+    const flavor = game.i18n.format('MARROW.Roll.AttackWith', { weapon: weapon.name });
+
+    // X.3 is a decision, not a lookup: the matchup is only one of the things that might
+    // apply. Ask, with the matchup already filled in, unless the caller said not to.
+    let result;
+    if (options.skipDialog) {
+      result = await new MarrowCheck(this, { key: 'combat', sources, flavor }).evaluate();
+    } else {
+      const { CheckDialog } = await import('../apps/check-dialog.mjs');
+      result = await CheckDialog.prompt(this, { key: 'combat', sources, flavor });
+    }
+    if (!result) return null;
 
     if (result.success) await this.rollWeaponDamage(weapon, { target, critical: result.critical });
     return result;

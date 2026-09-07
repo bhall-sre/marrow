@@ -36,10 +36,10 @@ export function registerHelpers() {
   H.registerHelper('armorLine', (item) => {
     const s = item?.system;
     if (!s) return '';
-    const parts = [`AP ${s.armorPoints}`];
+    const parts = [`AP ${s.effectiveAP}`];
     if (s.damageReduction) parts.push(`DR ${s.damageReduction}`);
     parts.push(s.kindLabel);
-    if (s.destroyed) parts.push(game.i18n.localize('MARROW.Destroyed'));
+    if (s.state !== 'intact') parts.push(s.stateLabel);
     return new H.SafeString(parts.join(' &middot; '));
   });
 

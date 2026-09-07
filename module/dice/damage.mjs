@@ -1,5 +1,6 @@
 import { MARROW } from '../config.mjs';
 import { drawSystemTable, resolveTable } from './check.mjs';
+import { applyResultEffects } from './effects.mjs';
 
 /**
  * Damage, armour, Wounds and death.
@@ -119,9 +120,15 @@ export async function takeWound(actor, damageType, outcome = {}) {
   outcome.rolledWounds = (outcome.rolledWounds ?? 0) + 1;
 
   const tableName = MARROW.tables.wounds[damageType] ?? MARROW.tables.wounds.bluntForce;
-  await drawSystemTable(tableName, actor);
+  const draw = await drawSystemTable(tableName, actor);
 
-  if (next >= wounds.max) {
+  // XIII's rows state their consequences in words -- "Bleeding +2", "Minimum Stress +1",
+  // "-1d10 Strength". Do what the row says rather than leaving it for someone to notice.
+  const text = draw?.results?.[0]?.description ?? draw?.results?.[0]?.text ?? '';
+  const effects = await applyResultEffects(actor, text, { source: tableName });
+  outcome.effects = effects;
+
+  if (next >= wounds.max || effects.deathSave) {
     outcome.deathSave = true;
     await deathSave(actor);
   }
@@ -163,12 +170,22 @@ export async function deathSave(actor) {
   return result;
 }
 
-/** XII.5, XII.6: armour, shield and cover are all destroyed the same way. */
+/**
+ * XII.5, XII.6: armour, shield and cover are all destroyed the same way -- outright, by one
+ * hit that meets or beats their Armor Points. There is no wearing-down and no hit points;
+ * VIII.3's Repair paragraph is what brings it back, in two steps.
+ */
 export async function destroyArmor(actor) {
   const updates = actor.items
-    .filter(i => i.type === 'armor' && i.system.equipped && !i.system.destroyed && i.system.armorPoints > 0)
-    .map(i => ({ _id: i.id, 'system.destroyed': true }));
-  if (updates.length) await actor.updateEmbeddedDocuments('Item', updates);
+    .filter(i => i.type === 'armor' && i.system.equipped
+                 && i.system.state !== 'destroyed' && i.system.effectiveAP > 0)
+    .map(i => ({ _id: i.id, 'system.state': 'destroyed' }));
+  if (updates.length) {
+    await actor.updateEmbeddedDocuments('Item', updates);
+    ui.notifications?.info(game.i18n.format('MARROW.Armor.Destroyed', {
+      name: actor.name, n: updates.length,
+    }));
+  }
   return updates.length;
 }
 

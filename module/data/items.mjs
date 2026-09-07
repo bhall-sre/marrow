@@ -99,10 +99,17 @@ export class ArmorData extends foundry.abstract.TypeDataModel {
       warded: new fields.BooleanField({ initial: false }),
       heavy: new fields.BooleanField({ initial: false }),
       equipped: new fields.BooleanField({ initial: false }),
-      // XII.5: "the armor is destroyed and the remainder goes into you." Destroyed armor
-      // stops contributing AP but keeps its DR -- XII.5 is explicit that DR "keeps working
-      // after the armor is gone."
-      destroyed: new fields.BooleanField({ initial: false }),
+      /**
+       * VIII.3 gives armour three states and no hit points at all. XII.5 destroys it
+       * outright -- "if a single hit deals damage equal to or greater than your AP, the
+       * armor is destroyed" -- and VIII.3's Repair paragraph brings it back in two steps:
+       * "a leatherworker's kit patches torn armor back to serviceable, but patched armor
+       * has AP 1 until a proper smith sees it. A smith restores full AP."
+       */
+      state: new fields.StringField({
+        required: true, blank: false, initial: 'intact',
+        choices: ['intact', 'destroyed', 'patched'],
+      }),
       notes: new fields.StringField(),
     };
   }
@@ -110,6 +117,14 @@ export class ArmorData extends foundry.abstract.TypeDataModel {
   prepareDerivedData() {
     if (!this.kind) this.kind = MARROW.armorKindForAP(this.armorPoints);
     this.kindLabel = this.isShield ? 'Shield' : (MARROW.armorKinds[this.kind]?.label ?? this.kind);
+
+    // The Armor Points this actually contributes right now. Destroyed armour keeps its
+    // Damage Reduction: XII.5 is explicit that DR "keeps working after the armor is gone."
+    this.effectiveAP = this.state === 'destroyed' ? 0
+      : this.state === 'patched' ? Math.min(1, this.armorPoints)
+      : this.armorPoints;
+    this.destroyed = this.state === 'destroyed';
+    this.stateLabel = game.i18n.localize(`MARROW.ArmorState.${this.state}`);
   }
 }
 

@@ -111,9 +111,23 @@
       <span>{{localize 'MARROW.Warded'}}</span></label>
     <label class="check"><input type="checkbox" name="system.heavy" {{checked system.heavy}} />
       <span>{{localize 'MARROW.Heavy'}}</span></label>
-    <label class="check" data-tooltip="{{localize 'MARROW.DestroyedHint'}}">
-      <input type="checkbox" name="system.destroyed" {{checked system.destroyed}} />
-      <span>{{localize 'MARROW.Destroyed'}}</span></label>
+  </div>
+
+  {{!-- VIII.3's Repair: destroyed, patched back to AP 1, or restored in full. There are no
+        hit points here -- XII.5 destroys armour outright or leaves it untouched. --}}
+  <div class="fields">
+    <label class="field" data-tooltip="{{localize 'MARROW.PatchHint'}}">
+      <span>{{localize 'MARROW.Condition'}}</span>
+      <select name="system.state">
+        {{#each MARROW.armorStates as |label key|}}
+          <option value="{{key}}" {{selected (eq key ../system.state)}}>{{localize label}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <div class="field">
+      <span>{{localize 'MARROW.CurrentAP'}}</span>
+      <strong class="effective-ap">{{system.effectiveAP}}</strong>
+    </div>
   </div>
 {{/if}}
 

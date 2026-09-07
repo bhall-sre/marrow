@@ -118,8 +118,9 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
     // Armour from equipped items (VIII.4: shields add their AP to your armour's).
     for (const item of this.parent.items) {
       if (item.type !== 'armor' || !item.system.equipped) continue;
-      // XII.5: destroyed armor gives no AP, but its DR "keeps working after the armor is gone."
-      if (!item.system.destroyed) this.armor.points += item.system.armorPoints;
+      // VIII.3's three states decide what it is worth right now; XII.5 keeps its Damage
+      // Reduction working whatever state it is in.
+      this.armor.points += item.system.effectiveAP;
       this.armor.damageReduction += item.system.damageReduction;
       // The worn armour sets the kind the VIII.1 matchup keys off; a shield never does.
       if (!item.system.isShield && !this.armor.kind) this.armor.kind = item.system.kind;

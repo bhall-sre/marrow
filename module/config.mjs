@@ -166,3 +166,10 @@ MARROW.statLabels = {
   strength: 'Strength', speed: 'Speed', intellect: 'Intellect', combat: 'Combat',
   sanity: 'Sanity', fear: 'Fear', body: 'Body',
 };
+
+/** VIII.3's Repair paragraph, as the three states armour can be in. */
+MARROW.armorStates = {
+  intact: 'MARROW.ArmorState.intact',
+  destroyed: 'MARROW.ArmorState.destroyed',
+  patched: 'MARROW.ArmorState.patched',
+};
