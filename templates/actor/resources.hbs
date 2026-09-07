@@ -66,9 +66,9 @@
     <div class="sub">{{localize 'MARROW.APDR'}} <span class="kind">{{armorKindLabel}}</span></div>
   </div>
 
-</section>
+  {{#if system.bleeding}}
+    {{!-- XIII.1: cumulative, ignores armour and DR. Worth shouting about. --}}
+    <div class="bleeding-banner">{{localize 'MARROW.Bleeding'}} {{system.bleeding}}</div>
+  {{/if}}
 
-{{#if system.bleeding}}
-  {{!-- XIII.1: cumulative, ignores armour and DR. Worth shouting about. --}}
-  <div class="bleeding-banner">{{localize 'MARROW.Bleeding'}} {{system.bleeding}}</div>
-{{/if}}
+</section>

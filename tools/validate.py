@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Checks that hold the system together, run before every commit.
 
-Two of these exist because I shipped the bug they catch:
+Three of these exist because I shipped the bug they catch:
 
   * `lang_collisions` -- Foundry flattens nested language objects to dotted paths, so a
     literal key "A.B" sitting beside a nested object {"A": {"B": ...}} silently shadows one
@@ -9,6 +9,11 @@ Two of these exist because I shipped the bug they catch:
 
   * `pack_openable` -- a LevelDB directory holding only a .log reads fine from Python and
     shows up EMPTY in Foundry. A pack is only openable with CURRENT and a MANIFEST.
+
+  * `check_part_roots` -- an ApplicationV2 PARTS template must render exactly one root
+    element. resources.hbs rendered fine as a single <section> until Bleeding actually went
+    above 0, at which point a sibling {{#if}} banner after </section> gave it two roots and
+    crashed the character sheet the instant it re-rendered.
 
 None of this can tell you whether the JavaScript parses. A syntax error anywhere in the
 module graph leaves the system silently unloaded -- Foundry logs it and falls back to its
@@ -374,11 +379,66 @@ def check_templates():
                 fail(f"{path.relative_to(ROOT)}: template {ref} does not exist")
 
 
+# ApplicationV2 requires every PARTS template to render exactly one root HTML element --
+# resources.hbs shipped a <section> followed by a sibling {{#if}} banner, which rendered fine
+# until Bleeding actually went above 0 and crashed the sheet the moment it tried to re-render.
+# Handlebars itself enforces no such thing, and tools/smoke.html only compiles and renders
+# templates through raw Handlebars, so neither one would have caught it.
+PARTS_RE = re.compile(r"static\s+PARTS\s*=\s*\{(.*?)\n\s*\};", re.S)
+PART_TEMPLATE_RE = re.compile(r"template:\s*['\"]systems/marrow/(templates/[^'\"]+)['\"]")
+VOID_TAGS = {"input", "img", "br", "hr", "prose-mirror"}
+
+
+def _strip_handlebars(text: str) -> str:
+    text = re.sub(r"\{\{!--.*?--\}\}", "", text, flags=re.S)
+    text = re.sub(r"\{\{[^}]*\}\}", "", text)
+    return text
+
+
+def _root_element_count(html: str) -> int:
+    depth = 0
+    roots = 0
+    for match in re.finditer(r"<(/?)([a-zA-Z][\w-]*)\b[^>]*?(/?)>", html):
+        closing, tag, self_closed = match.groups()
+        tag = tag.lower()
+        if self_closed or tag in VOID_TAGS:
+            if depth == 0 and not closing:
+                roots += 1
+            continue
+        if closing:
+            depth -= 1
+        else:
+            if depth == 0:
+                roots += 1
+            depth += 1
+    return roots
+
+
+def check_part_roots():
+    part_templates: set[str] = set()
+    for path in list(ROOT.glob("module/sheets/*.mjs")) + [ROOT / "module/apps/creation.mjs"]:
+        text = path.read_text(encoding="utf-8")
+        for block in PARTS_RE.findall(text):
+            part_templates.update(PART_TEMPLATE_RE.findall(block))
+
+    for ref in sorted(part_templates):
+        target = ROOT / ref
+        if not target.exists():
+            continue  # already reported by check_templates
+        html = _strip_handlebars(target.read_text(encoding="utf-8"))
+        roots = _root_element_count(html)
+        if roots != 1:
+            fail(f"{ref}: PARTS template must render exactly one root element, found {roots} "
+                 f"-- a conditional sibling at the top level (like a banner after </section>) "
+                 f"crashes ApplicationV2 the moment that branch turns on")
+
+
 def main() -> int:
     flat = check_lang()
     check_referenced_keys(flat)
     check_manifest()
     check_templates()
+    check_part_roots()
     check_packs()
     check_table_results()
     check_table_references()
