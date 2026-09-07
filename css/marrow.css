@@ -1065,6 +1065,9 @@
   min-width: 0;
 }
 
+.marrow .class-card,
+.marrow .class-card:hover { color: var(--ink); }
+
 .marrow .class-card:hover { border-color: var(--brass); }
 
 .marrow .class-card.selected {
@@ -1077,10 +1080,14 @@
 
 .marrow .class-name {
   font-family: var(--font-display);
-  font-size: .8rem;
-  font-weight: 600;
+  font-size: .85rem;
+  font-weight: 700;
   letter-spacing: .05em;
+  /* Stated outright: inheriting leaves it near-invisible on the pale card. */
+  color: var(--ink);
 }
+
+.marrow .class-card.selected .class-name { color: var(--parchment); }
 
 .marrow .class-summary { font-size: .68rem; line-height: 1.35; color: var(--ink-faint); }
 .marrow .class-card.selected .class-summary { color: var(--parchment-deep); }
@@ -1203,3 +1210,94 @@
 }
 
 .marrow .marrow-header .generate:hover { background: var(--blood); border-color: var(--blood); }
+
+/* --------------------------------------------------------------------------
+   Wizard: rolling one number at a time
+   -------------------------------------------------------------------------- */
+
+/* A number is rolled once and then it stands, so the button is replaced by the
+   result rather than sitting there inviting another go. */
+.marrow .rolled.done { border-color: var(--brass); }
+
+.marrow .roll-one {
+  width: auto;
+  height: auto;
+  padding: 2px 9px;
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  background: var(--ink);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.marrow .roll-one:hover { background: var(--blood); }
+
+/* I.8's three draws, shown the same way the numbers are. */
+.marrow .kit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.marrow .kit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 7px 9px;
+  background: rgba(255, 255, 255, .3);
+  border: 1px solid var(--parchment-deep);
+  border-radius: 2px;
+  min-width: 0;
+}
+
+.marrow .kit-box.done { border-color: var(--brass); }
+
+.marrow .kit-label {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.marrow .kit-text { font-size: .84rem; line-height: 1.35; color: var(--ink); }
+.marrow .kit-waiting { font-size: .78rem; font-style: italic; color: var(--ink-faint); }
+
+.marrow .creation-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--parchment-deep);
+}
+
+.marrow .creation-footer .footer-note {
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.marrow .creation-footer .create {
+  width: auto;
+  font-family: var(--font-display);
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  background: var(--ink);
+  border: 1px solid var(--brass);
+  border-radius: 2px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.marrow .creation-footer .create:hover:not(:disabled) { background: var(--blood); }
+.marrow .creation-footer .create:disabled { opacity: .4; cursor: default; }

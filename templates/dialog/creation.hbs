@@ -4,47 +4,25 @@
 --}}
 <div class="creation-body">
 
-  {{!-- I.1, I.2, I.4, I.8 --}}
+  {{!-- I.1, I.2, I.4, I.8. Each number is rolled once and then it is what it is. --}}
   <section class="step">
-    <div class="step-head">
-      <h3>{{localize 'MARROW.Creation.Numbers'}}</h3>
-      <button type="button" data-action="rerollAll">
-        <i class="fa-solid fa-dice"></i> {{localize 'MARROW.Creation.RerollAll'}}</button>
-    </div>
+    <div class="step-head"><h3>{{localize 'MARROW.Creation.Numbers'}}</h3></div>
 
     <div class="roll-grid">
-      {{#each rolls.stats as |value key|}}
-        <div class="rolled">
-          <span class="rolled-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
-          <span class="rolled-value">{{value}}</span>
-          <button type="button" data-action="rerollOne" data-group="stats"
-                  data-key="{{key}}" data-formula="2d10+25"
-                  data-tooltip="2d10+25"><i class="fa-solid fa-rotate"></i></button>
+      {{#each numbers as |n|}}
+        <div class="rolled{{#if n.rolled}} done{{/if}}">
+          <span class="rolled-label">{{n.label}}</span>
+          {{#if n.rolled}}
+            <span class="rolled-value">{{n.value}}</span>
+          {{else}}
+            <button type="button" class="roll-one" data-action="rollNumber"
+                    data-group="{{n.group}}" data-key="{{n.key}}"
+                    data-tooltip="{{n.formula}}">
+              <i class="fa-solid fa-dice-d20"></i> {{localize 'MARROW.Creation.Roll'}}
+            </button>
+          {{/if}}
         </div>
       {{/each}}
-      {{#each rolls.saves as |value key|}}
-        <div class="rolled save">
-          <span class="rolled-label">{{localize (concat 'MARROW.Adjust.' key)}}</span>
-          <span class="rolled-value">{{value}}</span>
-          <button type="button" data-action="rerollOne" data-group="saves"
-                  data-key="{{key}}" data-formula="2d10+10"
-                  data-tooltip="2d10+10"><i class="fa-solid fa-rotate"></i></button>
-        </div>
-      {{/each}}
-      <div class="rolled">
-        <span class="rolled-label">{{localize 'MARROW.Health'}}</span>
-        <span class="rolled-value">{{rolls.health}}</span>
-        <button type="button" data-action="rerollOne" data-group="root"
-                data-key="health" data-formula="1d10+10"
-                data-tooltip="1d10+10"><i class="fa-solid fa-rotate"></i></button>
-      </div>
-      <div class="rolled">
-        <span class="rolled-label">{{localize 'MARROW.Silver'}}</span>
-        <span class="rolled-value">{{rolls.silver}}</span>
-        <button type="button" data-action="rerollOne" data-group="root"
-                data-key="silver" data-formula="2d10"
-                data-tooltip="2d10 &times; 10"><i class="fa-solid fa-rotate"></i></button>
-      </div>
     </div>
   </section>
 
@@ -123,10 +101,23 @@
       </label>
     </div>
 
-    <label class="check">
-      <input type="checkbox" name="rollKit" checked />
-      <span>{{localize 'MARROW.Creation.RollKit'}}</span>
-    </label>
+    {{!-- I.8, rolled the same way the numbers are. --}}
+    <div class="kit-grid">
+      {{#each kit as |k|}}
+        <div class="kit-box{{#if k.rolled}} done{{/if}}">
+          <span class="kit-label">{{k.label}}</span>
+          {{#if k.rolled}}
+            <span class="kit-text">{{k.text}}</span>
+          {{else if k.available}}
+            <button type="button" class="roll-one" data-action="rollKit" data-slot="{{k.slot}}">
+              <i class="fa-solid fa-dice-d20"></i> {{localize 'MARROW.Creation.Roll'}}
+            </button>
+          {{else}}
+            <span class="kit-waiting">{{localize 'MARROW.Creation.PickClassFirst'}}</span>
+          {{/if}}
+        </div>
+      {{/each}}
+    </div>
 
     <div class="preview">
       {{#each preview.stats as |s key|}}
@@ -165,5 +156,21 @@
       <p class="notice">{{localize 'MARROW.Creation.BlightNote'}}</p>
     {{/if}}
   </section>
+
+  {{!-- The submit button is part of this template rather than a separate footer part, so
+        that it is always present regardless of what the core generic footer template does. --}}
+  <footer class="creation-footer">
+    {{#if blockedBy}}
+      <span class="footer-note">{{localize blockedBy}}</span>
+    {{/if}}
+    <button type="submit" class="create" {{#unless canSubmit}}disabled{{/unless}}>
+      <i class="fa-solid fa-feather"></i>
+      {{#if isRegenerate}}
+        {{localize 'MARROW.Creation.Regenerate'}}
+      {{else}}
+        {{localize 'MARROW.Creation.Create'}}
+      {{/if}}
+    </button>
+  </footer>
 
 </div>

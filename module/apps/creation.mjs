@@ -1,5 +1,5 @@
 import { MARROW } from '../config.mjs';
-import { drawSystemTable, resolveTable } from '../dice/check.mjs';
+import { resolveTable } from '../dice/check.mjs';
 
 const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
 
@@ -28,8 +28,8 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
     position: { width: 720, height: 800 },
     form: { handler: CharacterCreation.#onSubmit, closeOnSubmit: true },
     actions: {
-      rerollAll: CharacterCreation.#onRerollAll,
-      rerollOne: CharacterCreation.#onRerollOne,
+      rollNumber: CharacterCreation.#onRollNumber,
+      rollKit: CharacterCreation.#onRollKit,
       pickClass: CharacterCreation.#onPickClass,
       toggleSkill: CharacterCreation.#onToggleSkill,
     },
@@ -37,7 +37,6 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
 
   static PARTS = {
     body: { template: 'systems/marrow/templates/dialog/creation.hbs', scrollable: [''] },
-    footer: { template: 'templates/generic/form-footer.hbs' },
   };
 
   /**
@@ -48,7 +47,10 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
   constructor(options = {}) {
     super(options);
     this.actor = options.actor ?? null;
-    this.rolls = null;
+    // Nothing is rolled until the player rolls it. A number, once rolled, is what it is --
+    // I.1: "do not agonize over the numbers."
+    this.rolls = CharacterCreation.blankRolls();
+    this.kit = { loadout: null, trinket: null, crest: null };
     this.classId = null;
     this.choice = null;
     this.chosenSkills = new Set();
@@ -56,36 +58,56 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
 
   /* --- The dice of I.1, I.2, I.4, I.8 ---------------------------------------- */
 
-  /** Every number a character starts with, rolled in one go. */
-  static async rollEverything() {
-    const one = async (formula) => (await new Roll(formula).evaluate()).total;
-    return {
-      stats: {
-        strength: await one('2d10+25'),
-        speed: await one('2d10+25'),
-        intellect: await one('2d10+25'),
-        combat: await one('2d10+25'),
-      },
-      saves: {
-        sanity: await one('2d10+10'),
-        fear: await one('2d10+10'),
-        body: await one('2d10+10'),
-      },
-      health: await one('1d10+10'),
-      // I.8: "roll 2d10 and multiply by 10 for your starting silver."
-      silver: (await one('2d10')) * 10,
-    };
+  /**
+   * The nine numbers I asks you to roll, each with the formula MARROW.md gives it.
+   * I.1: Stats 2d10+25. I.2: Saves 2d10+10. I.4: Health 1d10+10. I.8: silver 2d10 x 10.
+   */
+  static NUMBERS = [
+    { group: 'stats', key: 'strength',  formula: '2d10+25' },
+    { group: 'stats', key: 'speed',     formula: '2d10+25' },
+    { group: 'stats', key: 'intellect', formula: '2d10+25' },
+    { group: 'stats', key: 'combat',    formula: '2d10+25' },
+    { group: 'saves', key: 'sanity',    formula: '2d10+10' },
+    { group: 'saves', key: 'fear',      formula: '2d10+10' },
+    { group: 'saves', key: 'body',      formula: '2d10+10' },
+    { group: 'root',  key: 'health',    formula: '1d10+10' },
+    { group: 'root',  key: 'silver',    formula: '2d10 * 10' },
+  ];
+
+  static blankRolls() {
+    return { stats: {}, saves: {}, health: null, silver: null };
+  }
+
+  #valueOf({ group, key }) {
+    return group === 'root' ? this.rolls[key] : (this.rolls[group][key] ?? null);
+  }
+
+  #setValue({ group, key }, value) {
+    if (group === 'root') this.rolls[key] = value;
+    else this.rolls[group][key] = value;
+  }
+
+  get allRolled() {
+    return CharacterCreation.NUMBERS.every(n => this.#valueOf(n) !== null);
   }
 
   async _prepareContext(options) {
-    this.rolls ??= await CharacterCreation.rollEverything();
     this.classes ??= await CharacterCreation.#loadClasses();
     this.skills ??= await CharacterCreation.#loadSkills();
 
     const chosen = this.classes.find(c => c.id === this.classId) ?? null;
 
     return {
-      rolls: this.rolls,
+      numbers: CharacterCreation.NUMBERS.map(n => ({
+        ...n,
+        label: game.i18n.localize(`MARROW.Adjust.${n.key}`) === `MARROW.Adjust.${n.key}`
+          ? game.i18n.localize(n.key === 'health' ? 'MARROW.Health' : 'MARROW.Silver')
+          : game.i18n.localize(`MARROW.Adjust.${n.key}`),
+        value: this.#valueOf(n),
+        rolled: this.#valueOf(n) !== null,
+      })),
+      allRolled: this.allRolled,
+      kit: this.#kitContext(chosen),
       classes: this.classes.map(c => ({
         id: c.id, name: c.name, img: c.img,
         selected: c.id === this.classId,
@@ -110,11 +132,33 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
       skillsByRank: this.#skillsByRank(chosen),
       preview: this.#preview(chosen),
       existing: this.actor ? { name: this.actor.name, pronouns: this.actor.system.pronouns } : null,
-      buttons: [
-        { type: 'submit', icon: 'fa-solid fa-feather', disabled: !this.classId,
-          label: this.actor ? 'MARROW.Creation.Regenerate' : 'MARROW.Creation.Create' },
-      ],
+      isRegenerate: !!this.actor,
+      canSubmit: !!this.classId && this.allRolled,
+      // Says what is still missing, rather than leaving a disabled button unexplained.
+      blockedBy: !this.allRolled ? 'MARROW.Creation.RollEverythingFirst'
+        : !this.classId ? 'MARROW.Creation.PickClassFirst'
+        : null,
     };
+  }
+
+  /**
+   * I.8's three draws. Each is rolled here rather than at submit, so the player sees what
+   * they got before committing -- the same as every other number on this page.
+   */
+  #kitContext(chosen) {
+    const slots = [
+      { slot: 'loadout', label: 'MARROW.Roll.Loadout', table: chosen?.system.tables.loadout },
+      { slot: 'trinket', label: 'MARROW.Roll.Trinket', table: chosen?.system.tables.trinket },
+      { slot: 'crest',   label: 'MARROW.Roll.Crest',   table: chosen?.system.tables.crest },
+    ];
+    return slots.map(s => ({
+      ...s,
+      label: game.i18n.localize(s.label),
+      text: this.kit[s.slot],
+      rolled: this.kit[s.slot] !== null,
+      // V's Loadout table is the Class's own, so there is nothing to roll until one is picked.
+      available: !!s.table,
+    }));
   }
 
   static async #loadClasses() {
@@ -177,8 +221,11 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
 
   /** The sheet as it will be, so the player sees the Class land before committing. */
   #preview(chosen) {
-    const stats = { ...this.rolls.stats };
-    const saves = { ...this.rolls.saves };
+    const zero = (group) => Object.fromEntries(
+      CharacterCreation.NUMBERS.filter(n => n.group === group)
+        .map(n => [n.key, this.rolls[group][n.key] ?? 0]));
+    const stats = zero('stats');
+    const saves = zero('saves');
     let wounds = 2;
     let blight = 0;
 
@@ -203,8 +250,8 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
     return {
       stats: withPenalty(stats),
       saves: withPenalty(saves),
-      health: this.rolls.health,
-      silver: this.rolls.silver,
+      health: this.rolls.health ?? 0,
+      silver: this.rolls.silver ?? 0,
       wounds,
       blight,
       // XVI.1: Steeped and Consumed each add 1 to the Stress floor. At creation only the
@@ -215,22 +262,42 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
 
   /* --- Actions --------------------------------------------------------------- */
 
-  static async #onRerollAll() {
-    this.rolls = await CharacterCreation.rollEverything();
+  /** Roll one number. Once it is rolled the button goes: the number stands. */
+  static async #onRollNumber(event, target) {
+    const spec = CharacterCreation.NUMBERS.find(
+      n => n.group === target.dataset.group && n.key === target.dataset.key);
+    if (!spec || this.#valueOf(spec) !== null) return;
+
+    const roll = await new Roll(spec.formula).evaluate();
+    this.#setValue(spec, roll.total);
     this.render();
   }
 
-  static async #onRerollOne(event, target) {
-    const { group, key, formula } = target.dataset;
-    const total = (await new Roll(formula).evaluate()).total;
-    if (group === 'root') this.rolls[key] = key === 'silver' ? total * 10 : total;
-    else this.rolls[group][key] = total;
+  /** I.8: Loadout, Trinket, Crest. Drawn here so the player sees them before committing. */
+  static async #onRollKit(event, target) {
+    const slot = target.dataset.slot;
+    if (this.kit[slot] !== null) return;
+
+    const chosen = this.classes.find(c => c.id === this.classId);
+    const table = await resolveTable(chosen?.system.tables[slot]);
+    if (!table) {
+      ui.notifications?.warn(game.i18n.format('MARROW.Table.Missing',
+        { name: chosen?.system.tables[slot] ?? slot }));
+      return;
+    }
+
+    const draw = await table.roll();
+    const result = draw.results[0];
+    this.kit[slot] = result?.description ?? result?.text ?? '';
     this.render();
   }
 
   static #onPickClass(event, target) {
     this.classId = target.dataset.classId;
     this.choice = null;
+    // V's Loadout is the Class's own table, so a draw from the previous one no longer means
+    // anything. The Trinket and Crest tables are shared, so those stand.
+    this.kit.loadout = null;
     // The previous class's granted Skills may have been propping up an Expert choice.
     this.chosenSkills.clear();
     this.render();
@@ -305,27 +372,22 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
       .map(s => s.toObject());
     if (extra.length) await actor.createEmbeddedDocuments('Item', extra);
 
-    // I.8: Loadout, Trinket, Crest.
-    if (data.rollKit) await CharacterCreation.rollStartingKit(actor, chosen);
+    // I.8: whatever was drawn on the way through, applied as items.
+    await CharacterCreation.applyKit(actor, this.kit);
 
     actor.sheet.render(true);
     return actor;
   }
 
   /**
-   * I.8. Each draw is posted to chat as well as applied, because a Loadout result is a
-   * sentence and the player should see what it actually said.
+   * I.8. Turn the three draws already made in the wizard into items. Nothing is rolled here
+   * -- the player has seen these results and accepted them.
    */
-  static async rollStartingKit(actor, classItem) {
-    const loadout = await drawSystemTable(classItem.system.tables.loadout, actor);
-    if (loadout) {
-      const text = loadout.results?.[0]?.description ?? loadout.results?.[0]?.text ?? '';
-      await CharacterCreation.applyLoadout(actor, text);
-    }
+  static async applyKit(actor, kit) {
+    if (kit.loadout) await CharacterCreation.applyLoadout(actor, kit.loadout);
 
-    for (const [key, category] of [['trinket', 'trinket'], ['crest', 'crest']]) {
-      const draw = await drawSystemTable(classItem.system.tables[key], actor);
-      const text = draw?.results?.[0]?.description ?? draw?.results?.[0]?.text ?? '';
+    for (const [slot, category] of [['trinket', 'trinket'], ['crest', 'crest']]) {
+      const text = kit[slot];
       if (!text) continue;
       await actor.createEmbeddedDocuments('Item', [{
         name: text,

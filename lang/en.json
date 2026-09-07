@@ -274,12 +274,10 @@
       "Button": "New MARROW Character",
       "Create": "Make the character",
       "Numbers": "Roll your numbers",
-      "RerollAll": "Roll again",
       "Class": "Choose your Class",
       "Skills": "Take your Skills",
       "Finish": "Name yourself",
       "Name": "Name",
-      "RollKit": "Roll Loadout, Trinket and Crest",
       "NoClasses": "The Classes compendium is not available.",
       "ChoiceSummary": "{amount} to one Stat of your choice",
       "BlightSummary": "begins at Blight {n}",
@@ -288,7 +286,10 @@
       "GenerateHint": "Roll this character: Stats, Saves, Health, silver, Class, Skills, Loadout, Trinket and Crest.",
       "Regenerate": "Replace this character",
       "ReplaceTitle": "Replace this character?",
-      "ReplaceBody": "This rolls {name} again from scratch. Their numbers, Class, Skills and everything they are carrying will be replaced."
+      "ReplaceBody": "This rolls {name} again from scratch. Their numbers, Class, Skills and everything they are carrying will be replaced.",
+      "Roll": "Roll",
+      "PickClassFirst": "Choose a Class first",
+      "RollEverythingFirst": "Roll every number first"
     },
     "RankLabel": "Rank"
   }

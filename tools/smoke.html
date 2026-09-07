@@ -110,6 +110,13 @@ globalThis.Hooks = {
 Math.clamp ??= (n, lo, hi) => Math.min(Math.max(n, lo), hi);
 String.prototype.capitalize ??= function () { return this.charAt(0).toUpperCase() + this.slice(1); };
 
+// Helpers Foundry supplies, stubbed so a render can happen here. The system's own helpers
+// come from registerHelpers() during init and are NOT stubbed -- a missing one should fail.
+Handlebars.registerHelper('localize', (k) => String(k));
+Handlebars.registerHelper('numberFormat', (n, o) => (o?.hash?.sign && n > 0 ? `+${n}` : `${n}`));
+Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
+Handlebars.registerHelper('selected', (v) => (v ? 'selected' : ''));
+
 // --- run ------------------------------------------------------------------
 (async () => {
   head('1. Import the module graph');
@@ -168,6 +175,47 @@ String.prototype.capitalize ??= function () { return this.charAt(0).toUpperCase(
     }
   }
   if (!bad) log('ok', `ok - all ${templates.length} templates compile`);
+
+  head('6. Render the wizard');
+  /*
+    Compiling only proves the syntax. Rendering with a realistic context is what catches a
+    missing helper, a mis-shaped loop, or a partial that was never registered -- all of which
+    compile fine and then throw the moment the window opens.
+  */
+  const ctx = {
+    numbers: [{ group: 'stats', key: 'strength', label: 'Strength', formula: '2d10+25',
+                value: 36, rolled: true },
+               { group: 'root', key: 'silver', label: 'Silver', formula: '2d10 * 10',
+                value: null, rolled: false }],
+    allRolled: false,
+    blockedBy: 'MARROW.Creation.RollEverythingFirst',
+    canSubmit: false,
+    isRegenerate: false,
+    kit: [{ slot: 'loadout', label: 'Roll Loadout', text: null, rolled: false, available: false },
+          { slot: 'trinket', label: 'Roll Trinket', text: 'A cat', rolled: true, available: true }],
+    classes: [{ id: 'a', name: 'The Soldier', img: 'x.svg', selected: true,
+                summary: '+10 Combat' }],
+    chosenClass: { name: 'The Soldier', skillsNote: '<p>Soldiering</p>', granted: [],
+                   choice: { amount: 5, isPenalty: false,
+                             options: [{ key: 'combat', label: 'Combat', selected: true }] } },
+    skillsByRank: { trained: [{ name: 'Athletics', bonus: 10, prerequisites: [],
+                                granted: false, chosen: false, locked: false, available: true }],
+                    expert: [], master: [] },
+    preview: { stats: { strength: { value: 36, total: 36 } },
+               saves: { sanity: { value: 20, total: 20 } },
+               health: 18, wounds: 2, stress: 2, blight: 0, silver: 100 },
+  };
+  try {
+    const text = await (await fetch(`../templates/dialog/creation.hbs?t=${Date.now()}`)).text();
+    const html = Handlebars.compile(text)(ctx);
+    const hasSubmit = /type=\"submit\"/.test(html);
+    log(hasSubmit ? 'ok' : 'bad',
+        hasSubmit ? 'ok - renders, and has a submit button'
+                  : 'renders, but there is NO submit button -- nothing to apply');
+  } catch (err) {
+    log('bad', `creation.hbs threw while rendering
+  ${err.message}`);
+  }
 })();
 </script>
 <script>
