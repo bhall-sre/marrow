@@ -110,6 +110,9 @@
     "APHint": "You ignore all damage less than your Armor Points. A hit that meets or beats them destroys the armor and the remainder goes into you.",
     "DRHint": "Damage Reduction always subtracts first, and keeps working after the armor is gone.",
     "AAHint": "Anti-Armor: ignores and destroys armor on any hit.",
+    "Weapon": {
+      "OutOfAmmo": "{weapon} is out of Ammo."
+    },
     "KindHint": "Left blank, the kind is read from the Armor Points: Soft 0–4, Mail 5–7, Plate 8–10.",
     "WardedHint": "Removes the Disadvantage on Blight Saves. It does not remove the Save.",
     "DestroyedHint": "Destroyed armor contributes no Armor Points, but its Damage Reduction keeps working.",

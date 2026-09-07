@@ -75,7 +75,7 @@
             <button type="button"
                     class="skill-chip{{#if s.chosen}} chosen{{/if}}{{#if s.granted}} granted{{/if}}{{#unless s.available}} unavailable{{/unless}}"
                     data-action="toggleSkill" data-skill="{{s.name}}"
-                    {{#if s.locked}}disabled{{/if}}
+                    {{#if s.disabled}}disabled{{/if}}
                     {{#if s.prerequisites.length}}data-tooltip="{{localize 'MARROW.Prerequisites'}} {{join s.prerequisites (localize 'MARROW.Or')}}"{{/if}}>
               {{s.name}} <span class="chip-bonus">+{{s.bonus}}</span>
               {{#if s.granted}}<i class="fa-solid fa-lock"></i>{{/if}}

@@ -180,29 +180,36 @@ for (const hook of ['createItem', 'updateItem', 'deleteItem']) {
  * training." Unlike a Skill, a Working is not something you choose to learn -- every
  * Blighted actor can attempt all seven the moment they cross into Blight 1, so the sheet
  * grants them automatically rather than making anyone drag seven items over one at a time.
+ * Losing every point of Blight (rare, but XVI.4 allows it) takes them back out again.
  */
-async function grantWorkingsIfBlighted(actor) {
-  if (!actor || (actor.system.blight?.value ?? 0) < 1) return;
-  const pack = game.packs.get('marrow.workings');
-  if (!pack) return;
-  await pack.getIndex();
+async function syncWorkings(actor) {
+  if (!actor || actor.system.blight === undefined) return;
 
-  const held = new Set(actor.items.filter(i => i.type === 'working').map(i => i.name));
-  const toAdd = [];
-  for (const entry of pack.index) {
-    if (held.has(entry.name)) continue;
-    const doc = await pack.getDocument(entry._id);
-    toAdd.push(doc.toObject());
+  if (actor.system.blight.value >= 1) {
+    const pack = game.packs.get('marrow.workings');
+    if (!pack) return;
+    await pack.getIndex();
+
+    const held = new Set(actor.items.filter(i => i.type === 'working').map(i => i.name));
+    const toAdd = [];
+    for (const entry of pack.index) {
+      if (held.has(entry.name)) continue;
+      const doc = await pack.getDocument(entry._id);
+      toAdd.push(doc.toObject());
+    }
+    if (toAdd.length) await actor.createEmbeddedDocuments('Item', toAdd);
+  } else {
+    const ids = actor.items.filter(i => i.type === 'working').map(i => i.id);
+    if (ids.length) await actor.deleteEmbeddedDocuments('Item', ids);
   }
-  if (toAdd.length) await actor.createEmbeddedDocuments('Item', toAdd);
 }
 
 Hooks.on('updateActor', (actor, changes) => {
-  if (foundry.utils.hasProperty(changes, 'system.blight.value')) grantWorkingsIfBlighted(actor);
+  if (foundry.utils.hasProperty(changes, 'system.blight.value')) syncWorkings(actor);
 });
 // The creation wizard can hand a Blighted class its starting Blight at creation itself
 // (Actor.create with the value already in system data), which updateActor never sees.
-Hooks.on('createActor', (actor) => grantWorkingsIfBlighted(actor));
+Hooks.on('createActor', (actor) => syncWorkings(actor));
 
 /**
  * XIII.1: "you take 1 damage every round until it is stopped." Bleeding is the one thing in

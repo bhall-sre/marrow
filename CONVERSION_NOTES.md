@@ -121,6 +121,18 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
   Skill that genuinely applies, add its bonus" -- singular, and arguably one specialization
   at a time is what was meant. By request, the dialog does not enforce that reading: every
   Skill checked adds its own bonus. `MarrowCheck` sums `skills[]` rather than holding one.
+- **The creation wizard enforces each Class's Skills allowance**, not just the named Skills
+  a Class grants outright. II's Bonus line is prose ("one Expert Skill, or two Trained
+  Skills") that was originally left to the player to self-police; by request it is now a
+  real cap, `MARROW.classSkillAllowance` in `config.mjs`, per Class:
+  - Soldier and Blighted: one Expert Skill *or* two Trained -- picking into one locks the
+    other until cleared back to zero.
+  - Laborer: exactly one Trained *and* one Expert, independently.
+  - Scholar: the odd one out. "One Master Skill together with one Expert and one Trained
+    Skill drawn from its chain of prerequisites" is not a count of any rank -- it names a
+    specific Master, whose own listed prerequisites are the only Expert choices, whose own
+    prerequisites are the only Trained choices. `#scholarChain` in `creation.mjs` walks that
+    chain instead of counting against a table.
 - **All third-party art was removed.** Item and table artwork now uses Foundry's own bundled
   `icons/` set. The one image in this repo, `images/ui/pause.svg`, is ours.
 - **The stylesheet was rewritten**, keyed to the new markup. It is hand-maintained; there is

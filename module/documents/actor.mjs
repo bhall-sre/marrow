@@ -69,6 +69,15 @@ export class MarrowActor extends Actor {
    * wearing." The matchup is VIII.1's, and it is the only thing the target contributes.
    */
   async rollAttack(weapon, options = {}) {
+    // VIII.2: "Ammo is what you have ready." Spent firing, not just on a hit.
+    if (weapon.system.usesAmmo) {
+      if (weapon.system.ammo.value <= 0) {
+        ui.notifications?.warn(game.i18n.format('MARROW.Weapon.OutOfAmmo', { weapon: weapon.name }));
+        return null;
+      }
+      await weapon.update({ 'system.ammo.value': weapon.system.ammo.value - 1 });
+    }
+
     const target = options.target ?? game.user.targets.first()?.actor ?? null;
     const sources = [...(options.sources ?? [])];
 

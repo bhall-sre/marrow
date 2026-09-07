@@ -7,14 +7,12 @@ const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
  * MARROW.md I, "Making your character". Nine steps, in order.
  *
  * The design rule here is the same one that governs the rest of the system: enforce what
- * MARROW.md states as a mechanic, and show -- rather than decide -- what it leaves to
- * judgement.
+ * MARROW.md states as a mechanic.
  *
- *   Enforced:  the dice (2d10+25, 2d10+10, 1d10+10, 2d10x10), the Class adjustments, and
- *              III's prerequisite rule, which is unambiguous.
- *   Shown:     each Class's Skills allowance, which is written in prose ("one Expert Skill,
- *              or two Trained Skills") and cannot be modelled without inventing a schema
- *              MARROW.md does not have.
+ *   Enforced: the dice (2d10+25, 2d10+10, 1d10+10, 2d10x10), the Class adjustments, III's
+ *             prerequisite rule, and each Class's own Skills allowance ("one Expert Skill,
+ *             or two Trained Skills") -- MARROW.classSkillAllowance in config.mjs, by
+ *             request, since the prose does not reduce to a schema MARROW.md states itself.
  *
  * I.1: "Roll fast and start playing." So every roll happens at once on open, the whole set
  * can be re-rolled, and nothing is required before Create except a Class.
@@ -196,27 +194,103 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
    * III: "To take an Expert Skill you must first hold one of its Trained prerequisites."
    * Held means granted by the Class or already chosen here, so the list re-evaluates as
    * the player picks -- taking Alchemy makes Apothecary available in the same pass.
+   *
+   * On top of that, II's own Skills line caps what the Bonus lets a new character add at
+   * all -- see MARROW.classSkillAllowance. The Scholar's chain is different in kind (a
+   * specific Master's own prerequisites, not a count of any rank) and is resolved by
+   * #scholarChain instead.
    */
   #skillsByRank(chosen) {
     const held = new Set([...(chosen?.system.grantedSkills ?? []), ...this.chosenSkills]);
+    const allowance = MARROW.classSkillAllowance[chosen?.name] ?? null;
+    const chain = allowance?.chain ? this.#scholarChain(chosen) : null;
 
     const groups = { trained: [], expert: [], master: [] };
     for (const skill of this.skills) {
       const prereqs = skill.system.prerequisites ?? [];
-      const met = !prereqs.length || prereqs.some(name => held.has(name));
+      const granted = chosen?.system.grantedSkills.includes(skill.name) ?? false;
+      const isChosen = this.chosenSkills.has(skill.name);
+      let met = !prereqs.length || prereqs.some(name => held.has(name));
+      let allowed = true;
+
+      if (!granted && allowance) {
+        if (allowance.chain) {
+          if (skill.system.rank === 'master') {
+            // The whole point of the Scholar's Bonus is a Master with none of its normal
+            // prerequisites met yet -- the chain taken alongside it is what supplies them.
+            met = true;
+            allowed = isChosen || !chain.master;
+          } else if (skill.system.rank === 'expert') {
+            allowed = isChosen || chain.expertChoices.includes(skill.name);
+          } else {
+            allowed = isChosen || chain.trainedChoices.includes(skill.name);
+          }
+        } else {
+          allowed = isChosen || this.#allowanceAllows(allowance, skill.system.rank);
+        }
+      }
+
       groups[skill.system.rank].push({
         name: skill.name,
         bonus: skill.system.bonus,
         prerequisites: prereqs,
-        granted: chosen?.system.grantedSkills.includes(skill.name) ?? false,
-        chosen: this.chosenSkills.has(skill.name),
-        // A Skill you hold from the Class is not selectable again.
-        locked: chosen?.system.grantedSkills.includes(skill.name) ?? false,
-        available: met,
+        granted,
+        chosen: isChosen,
+        // A Skill you hold from the Class is not selectable again; one the Bonus has no
+        // room left for is unavailable rather than disabled outright, so the reason (hover
+        // its prerequisites, or see the allowance note above) stays visible.
+        locked: granted,
+        available: met && allowed,
+        disabled: granted || !(met && allowed),
       });
     }
     for (const list of Object.values(groups)) list.sort((a, b) => a.name.localeCompare(b.name));
     return groups;
+  }
+
+  /** Counts of this.chosenSkills by rank, ignoring what the Class already grants. */
+  #chosenRankCounts() {
+    const counts = { trained: 0, expert: 0, master: 0 };
+    for (const skill of this.skills) {
+      if (this.chosenSkills.has(skill.name)) counts[skill.system.rank]++;
+    }
+    return counts;
+  }
+
+  /**
+   * anyOf: whichever option already has a pick in it is the only one still open, up to its
+   * own count -- picking into the other option is not a bigger bonus, it is a different one.
+   * all: every listed rank, independently, up to its own count; a rank the rule never
+   * mentions is not part of the Bonus at all.
+   */
+  #allowanceAllows(allowance, rank) {
+    const counts = this.#chosenRankCounts();
+    if (allowance.all) {
+      const rule = allowance.all.find(r => r.rank === rank);
+      return !!rule && counts[rank] < rule.count;
+    }
+    const active = allowance.anyOf.find(option => option.some(r => counts[r.rank] > 0));
+    const option = active ?? allowance.anyOf.find(option => option.some(r => r.rank === rank));
+    const rule = option?.find(r => r.rank === rank);
+    return !!rule && counts[rank] < rule.count;
+  }
+
+  /**
+   * The Scholar's Bonus: "one Master Skill together with one Expert and one Trained Skill
+   * drawn from its chain of prerequisites." Not any Expert or Trained Skill in III -- only
+   * the ones the chosen Master itself names, and only the ones the chosen Expert names.
+   */
+  #scholarChain(chosen) {
+    const byName = new Map(this.skills.map(s => [s.name, s]));
+    const masterName = [...this.chosenSkills].find(name => byName.get(name)?.system.rank === 'master');
+    const master = masterName ? byName.get(masterName) : null;
+    const expertChoices = master?.system.prerequisites ?? [];
+
+    const expertName = [...this.chosenSkills].find(name => expertChoices.includes(name));
+    const expert = expertName ? byName.get(expertName) : null;
+    const trainedChoices = expert?.system.prerequisites ?? [];
+
+    return { master: masterName ?? null, expertChoices, trainedChoices };
   }
 
   /** The sheet as it will be, so the player sees the Class land before committing. */
@@ -305,8 +379,18 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
 
   static #onToggleSkill(event, target) {
     const name = target.dataset.skill;
-    if (this.chosenSkills.has(name)) this.chosenSkills.delete(name);
-    else this.chosenSkills.add(name);
+    if (this.chosenSkills.has(name)) {
+      this.chosenSkills.delete(name);
+    } else {
+      // The template already disables anything #skillsByRank marks unavailable; this is the
+      // same check run again so a stale render (or a client editing the DOM) cannot add a
+      // Skill the Class's Bonus has no room left for.
+      const chosen = this.classes.find(c => c.id === this.classId) ?? null;
+      const groups = this.#skillsByRank(chosen);
+      const entry = Object.values(groups).flat().find(s => s.name === name);
+      if (!entry || entry.disabled) return;
+      this.chosenSkills.add(name);
+    }
     this.render();
   }
 

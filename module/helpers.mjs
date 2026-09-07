@@ -46,6 +46,15 @@ export function registerHelpers() {
     return new H.SafeString(parts.join(' &middot; '));
   });
 
+  /** A weapon's line: damage, Wound type, Range, and Ammo remaining when it uses any. */
+  H.registerHelper('weaponLine', (item) => {
+    const s = item?.system;
+    if (!s) return '';
+    const parts = [s.damage, s.damageTypeLabel, s.rangeLabel];
+    if (s.usesAmmo) parts.push(`${s.ammo.value}/${s.ammo.max}`);
+    return new H.SafeString(parts.join(' &middot; '));
+  });
+
   /** VIII.2's tags, paired with whether this weapon has each. */
   H.registerHelper('weaponTags', (system) =>
     MARROW.weaponTags.map(tag => ({ ...tag, on: !!system?.[tag.key] })));

@@ -538,10 +538,17 @@
 .marrow .item-name:hover { color: var(--blood); }
 
 .marrow .item-detail {
-  flex: 0 0 auto;
+  /* A fixed column, not auto-width -- otherwise each row's detail sits wherever its own
+     text ends, so a short "8d10" and an empty cell land at different points and nothing
+     in the list reads as a column. */
+  flex: 0 0 150px;
+  min-width: 0;
   font-size: .74rem;
   color: var(--ink-faint);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
 .marrow .item-controls { flex: 0 0 auto; display: flex; gap: 2px; }
@@ -1016,7 +1023,7 @@
 /* I.1, I.2, I.4, I.8 */
 .marrow .roll-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 6px;
 }
 
@@ -1129,6 +1136,7 @@
   height: auto;
   padding: 3px 9px;
   font-size: .8rem;
+  color: var(--ink);
   background: rgba(255, 255, 255, .35);
   border: 1px solid var(--parchment-deep);
   border-radius: 11px;
@@ -1242,6 +1250,7 @@
 .marrow .rolled.done { border-color: var(--brass); }
 
 .marrow .roll-one {
+  flex: 0 0 auto;
   width: auto;
   height: auto;
   padding: 2px 9px;

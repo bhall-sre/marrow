@@ -75,6 +75,25 @@ MARROW.skillRanks = {
   master:  { label: 'Master',  bonus: 20 },
 };
 
+/**
+ * II's Skills line, past the named Skills every member of the Class already holds. Written
+ * in prose in MARROW.md ("one Expert Skill, or two Trained Skills"), enforced here by
+ * request. Keyed by the Class's own name.
+ *
+ *   anyOf -- one of these options, not both: choosing from one locks out the other until
+ *            every pick from it is cleared.
+ *   all   -- every listed count, independently, at the same time.
+ *   chain -- the Scholar's own case: one Master Skill, plus one Expert and one Trained drawn
+ *            from THAT Master's own prerequisite chain rather than from anywhere in III. It
+ *            does not reduce to a count of ranks, so the wizard handles it by name.
+ */
+MARROW.classSkillAllowance = {
+  'The Soldier':  { anyOf: [[{ rank: 'expert', count: 1 }], [{ rank: 'trained', count: 2 }]] },
+  'The Blighted': { anyOf: [[{ rank: 'expert', count: 1 }], [{ rank: 'trained', count: 2 }]] },
+  'The Laborer':  { all: [{ rank: 'trained', count: 1 }, { rank: 'expert', count: 1 }] },
+  'The Scholar':  { chain: true },
+};
+
 /* -------------------------------------------------------------------------- */
 /*  XVII WORKINGS                                                              */
 /* -------------------------------------------------------------------------- */

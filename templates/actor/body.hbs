@@ -40,9 +40,7 @@
     </div>
     <ul class="item-list">
       {{#each items.weapon as |item|}}
-        {{> "marrow.item-row" item=item equippable=true
-            detail=(concat item.system.damage " &middot; " item.system.damageTypeLabel
-                           " &middot; " item.system.rangeLabel)}}
+        {{> "marrow.item-row" item=item equippable=true detail=(weaponLine item)}}
       {{else}}
         <li class="empty">{{localize 'MARROW.Empty.Weapons'}}</li>
       {{/each}}
