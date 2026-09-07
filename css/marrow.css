@@ -955,7 +955,7 @@
    Character creation (I)
    -------------------------------------------------------------------------- */
 
-.marrow.creation .window-content { background: var(--parchment); padding: 0; }
+.marrow.creation .window-content { background: var(--parchment); padding: 0; overflow-y: auto; }
 
 .marrow .creation-body { padding: 14px 18px 4px; }
 

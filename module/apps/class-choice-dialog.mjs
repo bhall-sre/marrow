@@ -40,7 +40,7 @@ export class ClassChoiceDialog {
       classes: ['marrow', 'dialog', 'class-choice'],
       content,
       buttons: [
-        { action: 'apply', label: 'MARROW.Dialog.Apply', default: true, callback: (e, b, d) => new FormData(d.form).get('choice') },
+        { action: 'apply', label: 'MARROW.Dialog.Apply', default: true, callback: (e, b) => new FormData(b.form).get('choice') },
         { action: 'cancel', label: 'MARROW.Dialog.Cancel' },
       ],
       rejectClose: false,

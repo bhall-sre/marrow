@@ -67,7 +67,7 @@ export class CheckDialog {
       classes: ['marrow', 'dialog', 'check-dialog'],
       content,
       buttons: [
-        { action: 'roll', label: 'MARROW.Dialog.Roll', default: true, callback: (e, b, d) => new FormData(d.form) },
+        { action: 'roll', label: 'MARROW.Dialog.Roll', default: true, callback: (e, b) => new FormData(b.form) },
       ],
       rejectClose: false,
     });
