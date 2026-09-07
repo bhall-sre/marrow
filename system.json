@@ -27,24 +27,159 @@
     }
   ],
   "packs": [
-    { "name": "classes",    "label": "Classes",          "path": "packs/classes",    "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "skills",     "label": "Skills",           "path": "packs/skills",     "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "weapons",    "label": "Weapons",          "path": "packs/weapons",    "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "armor",      "label": "Armor & Shields",  "path": "packs/armor",      "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "gear",       "label": "Gear",             "path": "packs/gear",       "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "treatments", "label": "Treatments",       "path": "packs/treatments", "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "trinkets",   "label": "Trinkets",         "path": "packs/trinkets",   "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "crests",     "label": "Crests",           "path": "packs/crests",     "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "workings",   "label": "Workings",         "path": "packs/workings",   "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "conditions", "label": "Conditions",       "path": "packs/conditions", "type": "Item", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "tables",     "label": "Tables",           "path": "packs/tables",     "type": "RollTable", "system": "marrow", "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" } },
-    { "name": "tables_warden", "label": "Tables (Warden Only)", "path": "packs/tables_warden", "type": "RollTable", "system": "marrow", "ownership": { "PLAYER": "NONE", "TRUSTED": "NONE", "ASSISTANT": "OWNER", "GAMEMASTER": "OWNER" } }
+    {
+      "name": "classes",
+      "label": "Classes",
+      "path": "packs/classes",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "skills",
+      "label": "Skills",
+      "path": "packs/skills",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "weapons",
+      "label": "Weapons",
+      "path": "packs/weapons",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "armor",
+      "label": "Armor & Shields",
+      "path": "packs/armor",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "gear",
+      "label": "Gear",
+      "path": "packs/gear",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "treatments",
+      "label": "Treatments",
+      "path": "packs/treatments",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "trinkets",
+      "label": "Trinkets",
+      "path": "packs/trinkets",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "crests",
+      "label": "Crests",
+      "path": "packs/crests",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "workings",
+      "label": "Workings",
+      "path": "packs/workings",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "conditions",
+      "label": "Conditions",
+      "path": "packs/conditions",
+      "type": "Item",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "tables",
+      "label": "Tables",
+      "path": "packs/tables",
+      "type": "RollTable",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "tables_warden",
+      "label": "Tables (Warden Only)",
+      "path": "packs/tables_warden",
+      "type": "RollTable",
+      "system": "marrow",
+      "ownership": {
+        "PLAYER": "NONE",
+        "TRUSTED": "NONE",
+        "ASSISTANT": "OWNER",
+        "GAMEMASTER": "OWNER"
+      }
+    }
   ],
   "packFolders": [
     {
       "name": "MARROW",
       "sorting": "m",
-      "packs": ["classes", "skills", "weapons", "armor", "gear", "treatments", "trinkets", "crests", "workings", "conditions", "tables", "tables_warden"]
+      "packs": [
+        "classes",
+        "skills",
+        "weapons",
+        "armor",
+        "gear",
+        "treatments",
+        "trinkets",
+        "crests",
+        "workings",
+        "conditions",
+        "tables",
+        "tables_warden"
+      ]
     }
   ],
   "documentTypes": {
@@ -62,11 +197,14 @@
       "condition": {}
     }
   },
-  "grid": { "distance": 1, "units": "m" },
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
   "primaryTokenAttribute": "health",
   "secondaryTokenAttribute": "stress",
   "url": "https://github.com/bhall-sre/marrow",
-  "manifest": "https://github.com/bhall-sre/marrow/releases/download/0.1.0/system.json",
+  "manifest": "https://github.com/bhall-sre/marrow/releases/latest/download/system.json",
   "download": "https://github.com/bhall-sre/marrow/releases/download/0.1.0/marrow.zip",
   "license": "LICENSE"
 }
