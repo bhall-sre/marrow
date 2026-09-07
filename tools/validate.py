@@ -156,6 +156,70 @@ def check_packs():
             fail(f"pack {pack['name']}: opens, but holds no documents")
 
 
+def check_table_references():
+    """Every roll table the code or a Class asks for by name must exist in a pack.
+
+    This is the check that would have caught the dead roll buttons: the code looked up a
+    table by name, the name was right, and the pack it lived in could not be opened -- so
+    the lookup returned nothing and the button did nothing, silently.
+
+    It also verifies each table's ranges actually cover its formula. A `1d100-1` table with
+    a gap at 37 rolls a blank result and says nothing about why.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import ldb  # noqa: PLC0415
+
+    available: dict[str, dict] = {}
+    for pack in ("tables", "tables_warden"):
+        directory = ROOT / "packs" / pack
+        if not directory.is_dir():
+            return                                   # check_packs already reported this
+        try:
+            raw = ldb.read_pack(str(directory))
+        except ValueError:
+            return                                   # ditto
+        for key, value in raw.items():
+            k = key.decode("utf-8")
+            if k.startswith("!tables!"):
+                doc = json.loads(value.decode("utf-8"))
+                available[doc["name"]] = doc
+            elif k.startswith("!tables.results!"):
+                table_id = k.split("!")[2].split(".")[0]
+                available.setdefault("_results", {}).setdefault(table_id, []).append(
+                    json.loads(value.decode("utf-8")))
+
+    results_by_table = available.pop("_results", {})
+
+    # Names the system looks up at runtime, out of config.mjs.
+    config = (ROOT / "module" / "config.mjs").read_text(encoding="utf-8")
+    wanted = set(re.findall(r"^\s*(?:panic|death|marks|bluntForce|bleeding|piercing|"
+                            r"fireBlast|goreMassive):\s*'([^']+)'", config, re.M))
+
+    # Names the Classes point at for their starting rolls.
+    builder = (ROOT / "tools" / "build_packs.py").read_text(encoding="utf-8")
+    wanted |= set(re.findall(r'"(Loadout: \w+)"', builder))
+    wanted |= {"Trinkets", "Crests"}
+
+    for name in sorted(wanted):
+        if name not in available:
+            fail(f"table {name!r} is looked up by name but is in no pack")
+
+    # Formula coverage.
+    for name, doc in sorted(available.items()):
+        m = re.fullmatch(r"1d(\d+)(-1)?", doc.get("formula", ""))
+        if not m:
+            continue
+        sides, shifted = int(m.group(1)), bool(m.group(2))
+        low, high = (0, sides - 1) if shifted else (1, sides)
+        covered = set()
+        for result in results_by_table.get(doc["_id"], []):
+            a, b = result["range"]
+            covered |= set(range(a, b + 1))
+        gaps = sorted(set(range(low, high + 1)) - covered)
+        if gaps:
+            fail(f"table {name!r} ({doc['formula']}) has no result for {gaps}")
+
+
 # --------------------------------------------------------------------------- #
 #  system.json                                                                 #
 # --------------------------------------------------------------------------- #
@@ -208,6 +272,7 @@ def main() -> int:
     check_manifest()
     check_templates()
     check_packs()
+    check_table_references()
 
     if problems:
         print(f"{len(problems)} problem(s):\n")

@@ -41,8 +41,10 @@ export class WeaponData extends foundry.abstract.TypeDataModel {
       damageType: new fields.StringField({
         required: true, initial: 'bluntForce', choices: Object.keys(MARROW.damageTypes),
       }),
+      // VIII.2 lists arrows and bolts among the weapons with no range of their own, so ''
+      // is allowed and reads as a dash.
       range: new fields.StringField({
-        required: true, initial: 'adjacent', choices: Object.keys(MARROW.ranges),
+        required: true, initial: 'adjacent', choices: ['', ...Object.keys(MARROW.ranges)],
       }),
       // "Ammo is what you have ready."
       ammo: new fields.SchemaField({
@@ -64,7 +66,7 @@ export class WeaponData extends foundry.abstract.TypeDataModel {
 
   prepareDerivedData() {
     this.damageTypeLabel = MARROW.damageTypes[this.damageType]?.label ?? this.damageType;
-    this.rangeLabel = MARROW.ranges[this.range] ?? this.range;
+    this.rangeLabel = MARROW.ranges[this.range] ?? '—';
     this.usesAmmo = this.ammo.max > 0;
   }
 

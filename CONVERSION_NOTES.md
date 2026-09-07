@@ -93,10 +93,13 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
 - **`tools/validate.py`** — including a check that every pack is *openable* by Foundry, which
   is the specific failure that made the roll tables silently empty last time.
 
+- **Compendium packs**, all twelve, generated from `MARROW.md` by `tools/build_packs.py`:
+  47 Skills, 34 Weapons, 12 Armor & Shields, 40 Gear, 8 Treatments, 100 Trinkets, 100
+  Crests, 4 Classes, 7 Workings, 9 Conditions, 14 tables and 2 Warden-only tables. Document
+  ids are a hash of (pack, name), so rebuilding keeps every UUID stable.
+
 ## Not done yet
 
-- **Compendium packs.** The twelve declared in `system.json` are not built. `validate.py`
-  fails on them until they are, which is intentional.
 - **Character creation** (I) — the nine-step flow, including the 2d10+25 / 2d10+10 rolls and
   the Loadout / Trinket / Crest draws.
 - **Macros** for the common rolls.
