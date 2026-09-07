@@ -244,6 +244,34 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
       log('bad', `${path} threw while rendering\n  ${err.message}`);
     }
   }
+
+  head('8. Render the Creature sheet');
+  // Registered as a real Handlebars partial, the same way preloadTemplates() does in
+  // Foundry itself -- creature-body.hbs pulls it in with {{> "marrow.item-row"}}.
+  Handlebars.registerPartial('marrow.item-row',
+    await (await fetch(`../templates/actor/parts/item-row.hbs?t=${Date.now()}`)).text());
+
+  const creatureCtx = {
+    system: {
+      combat: { label: 'Combat', value: 30, total: 30 },
+      instinct: { label: 'Instinct', value: 25, total: 25 },
+      health: { value: 10, max: 10 }, wounds: { value: 0, max: 2, dead: false },
+      armor: { points: 1, damageReduction: 0, kind: 'soft' }, bleeding: 0,
+      biography: '', notes: '',
+    },
+    armorKindLabel: 'Soft', enrichedBiography: '', enrichedNotes: '',
+    items: { weapon: [], armor: [] }, activeTab: 'arms',
+  };
+  for (const path of ['templates/actor/creature-header.hbs', 'templates/actor/creature-resources.hbs',
+                       'templates/actor/creature-numbers.hbs', 'templates/actor/creature-body.hbs']) {
+    try {
+      const text = await (await fetch(`../${path}?t=${Date.now()}`)).text();
+      Handlebars.compile(text)({ actor: { img: 'x.svg', name: 'Rat' }, ...creatureCtx });
+      log('ok', `ok - ${path} renders`);
+    } catch (err) {
+      log('bad', `${path} threw while rendering\n  ${err.message}`);
+    }
+  }
 })();
 </script>
 <script>
@@ -253,6 +281,8 @@ const TEMPLATES = [
   'templates/actor/nav.hbs', 'templates/actor/body.hbs', 'templates/actor/parts/item-row.hbs',
   'templates/actor/companion-header.hbs', 'templates/actor/companion-numbers.hbs',
   'templates/actor/companion-body.hbs',
+  'templates/actor/creature-header.hbs', 'templates/actor/creature-resources.hbs',
+  'templates/actor/creature-numbers.hbs', 'templates/actor/creature-body.hbs',
   'templates/item/header.hbs', 'templates/item/body.hbs',
   'templates/chat/check.hbs', 'templates/chat/panic.hbs', 'templates/chat/damage.hbs',
   'templates/chat/damage-applied.hbs', 'templates/chat/death.hbs', 'templates/chat/item.hbs',

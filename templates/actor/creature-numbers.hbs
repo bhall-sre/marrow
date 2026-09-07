@@ -1,0 +1,26 @@
+{{!-- The two numbers a fight needs: Combat, and Instinct standing in for everything else. --}}
+<section class="numbers creature-numbers">
+  <div class="grid">
+
+    <div class="score">
+      <button type="button" class="score-label rollable" data-action="roll" data-key="combat">
+        {{system.combat.label}}
+      </button>
+      <div class="score-total" data-action="roll" data-key="combat">{{system.combat.total}}</div>
+      <div class="score-base">
+        <input type="number" name="system.combat.value" value="{{system.combat.value}}" />
+      </div>
+    </div>
+
+    <div class="score">
+      <button type="button" class="score-label rollable" data-action="roll" data-key="instinct">
+        {{system.instinct.label}}
+      </button>
+      <div class="score-total" data-action="roll" data-key="instinct">{{system.instinct.total}}</div>
+      <div class="score-base">
+        <input type="number" name="system.instinct.value" value="{{system.instinct.value}}" />
+      </div>
+    </div>
+
+  </div>
+</section>

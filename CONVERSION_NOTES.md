@@ -88,9 +88,19 @@ or entangled" — is surfaced on the card rather than applied.
 This is a rebuild, not a port, so a few things that existed before are gone on purpose:
 
 - **No XP, Rank, Level, or Resolve.** None of them appear in `MARROW.md`.
-- **Retainers are the `companion` Actor type**, labelled "Retainer" everywhere the player
-  reads it — `MARROW.md` XX's own word. The type *key* differs only to avoid colliding with
-  anything else in an existing world.
+- **Retainers are the `companion` Actor type**, but labelled **"Companion"** everywhere the
+  player reads it — by explicit request, overriding `MARROW.md` XX's own word ("Retainer").
+  The type *key* was already `companion` before this, chosen only to avoid colliding with
+  anything else in an existing world; now the label agrees with it too.
+- **A `creature` Actor type exists for monsters, and MARROW.md defines none.** By request,
+  its stat block is a straight port of the Mothership Foundry system's own `creature` type
+  (`foundry-mothership-src/template.json`): Health, Wounds, Combat, Instinct. Mothership's
+  creature also offers optional Speed/Loyalty/Sanity/Armor toggles and a "swarm" rule that
+  rescales Combat by Wounds remaining — those are extensions on top of that base block, not
+  part of it, and were left out rather than invented on your behalf. Armor is handled through
+  MARROW's own Armor items (AP/DR/state) instead of Mothership's flat armor stat, since that
+  is strictly more capable and already exists. Say the word if you want the toggles or the
+  swarm rule too.
 - **All third-party art was removed.** Item and table artwork now uses Foundry's own bundled
   `icons/` set. The one image in this repo, `images/ui/pause.svg`, is ours.
 - **The stylesheet was rewritten**, keyed to the new markup. It is hand-maintained; there is
@@ -100,7 +110,7 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
 
 ## Done
 
-- **Data models** — `character`, `companion`, and all seven Item types, on
+- **Data models** — `character`, `companion`, `creature`, and all seven Item types, on
   `foundry.abstract.TypeDataModel`.
 - **The Blight as a first-class attribute** (XVI) — reaches every Stat, every Save, the
   Stress floor, and the Body Save's Advantage state, entirely through derived data, so the

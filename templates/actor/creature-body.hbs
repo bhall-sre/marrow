@@ -1,0 +1,48 @@
+<section class="sheet-body">
+
+{{#if (eq activeTab 'arms')}}
+  {{!-- VIII. --}}
+  <div class="tab-content arms">
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Weapons'}}</h3>
+      <button type="button" data-action="createItem" data-type="weapon">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.weapon as |item|}}
+        {{> "marrow.item-row" item=item equippable=true
+            detail=(concat item.system.damage " &middot; " item.system.damageTypeLabel
+                           " &middot; " item.system.rangeLabel)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Weapons'}}</li>
+      {{/each}}
+    </ul>
+
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Armor'}}</h3>
+      <button type="button" data-action="createItem" data-type="armor">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.armor as |item|}}
+        {{> "marrow.item-row" item=item equippable=true
+            detail=(armorLine item)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Armor'}}</li>
+      {{/each}}
+    </ul>
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'notes')}}
+  <div class="tab-content notes">
+    <h3>{{localize 'MARROW.Biography'}}</h3>
+    <prose-mirror name="system.biography" value="{{system.biography}}"
+                  toggled="true" data-enriched="{{enrichedBiography}}"></prose-mirror>
+    <h3>{{localize 'MARROW.Notes'}}</h3>
+    <prose-mirror name="system.notes" value="{{system.notes}}"
+                  toggled="true" data-enriched="{{enrichedNotes}}"></prose-mirror>
+  </div>
+{{/if}}
+
+</section>

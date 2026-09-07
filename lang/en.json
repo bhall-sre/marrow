@@ -2,7 +2,8 @@
   "TYPES": {
     "Actor": {
       "character": "Character",
-      "companion": "Retainer"
+      "companion": "Companion",
+      "creature": "Creature"
     },
     "Item": {
       "skill": "Skill",
@@ -17,7 +18,8 @@
   "MARROW": {
     "Sheet": {
       "Character": "MARROW Character",
-      "Companion": "MARROW Retainer",
+      "Companion": "MARROW Companion",
+      "Creature": "MARROW Creature",
       "Item": "MARROW Item"
     },
     "Unnamed": "Unnamed",
@@ -233,7 +235,7 @@
     "Retainer": {
       "Motivation": "Motivation",
       "MotivationHint": "Only the memorable ones need one.",
-      "MotivationWarning": "This retainer has a Motivation. They always fail a Loyalty Save when the two are in conflict. Always.",
+      "MotivationWarning": "This companion has a Motivation. They always fail a Loyalty Save when the two are in conflict. Always.",
       "Shorted": "Wages shorted",
       "ShortedHint": "Short them or stiff them and every future Loyalty Save is at [-].",
       "ShortedWarning": "Wages shorted: every Loyalty Save is at [-].",

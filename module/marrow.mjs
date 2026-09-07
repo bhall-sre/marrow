@@ -1,6 +1,7 @@
 import { MARROW } from './config.mjs';
 import { CharacterData } from './data/character.mjs';
 import { CompanionData } from './data/companion.mjs';
+import { CreatureData } from './data/creature.mjs';
 import {
   SkillData, WeaponData, ArmorData, GearData, ClassData, WorkingData, ConditionData,
 } from './data/items.mjs';
@@ -8,6 +9,7 @@ import { MarrowActor } from './documents/actor.mjs';
 import { MarrowItem } from './documents/item.mjs';
 import { MarrowCharacterSheet } from './sheets/character-sheet.mjs';
 import { MarrowCompanionSheet } from './sheets/companion-sheet.mjs';
+import { MarrowCreatureSheet } from './sheets/creature-sheet.mjs';
 import { MarrowItemSheet } from './sheets/item-sheet.mjs';
 import { registerHelpers, preloadTemplates } from './helpers.mjs';
 import { registerSettings } from './settings.mjs';
@@ -28,6 +30,7 @@ Hooks.once('init', () => {
   CONFIG.Actor.dataModels = {
     character: CharacterData,
     companion: CompanionData,
+    creature: CreatureData,
   };
   CONFIG.Item.dataModels = {
     skill: SkillData,
@@ -43,6 +46,7 @@ Hooks.once('init', () => {
   CONFIG.Actor.trackableAttributes = {
     character: { bar: ['health', 'stress'], value: ['wounds.value', 'blight.value', 'armor.points'] },
     companion: { bar: ['wounds'], value: ['combat.total', 'instinct.total', 'loyalty.total'] },
+    creature: { bar: ['health', 'wounds'], value: ['combat.total', 'instinct.total', 'armor.points'] },
   };
 
   // I: character creation is its own application, reachable from the Actors directory.
@@ -66,6 +70,9 @@ function registerSheets() {
   });
   actors.registerSheet('marrow', MarrowCompanionSheet, {
     types: ['companion'], makeDefault: true, label: 'MARROW.Sheet.Companion',
+  });
+  actors.registerSheet('marrow', MarrowCreatureSheet, {
+    types: ['creature'], makeDefault: true, label: 'MARROW.Sheet.Creature',
   });
 
   items.unregisterSheet('core', foundry.appv1.sheets.ItemSheet);

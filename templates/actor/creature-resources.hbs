@@ -1,0 +1,40 @@
+{{!-- Health and Wounds work exactly as a character's (XIII); there is no Stress or Blight
+      here because MARROW.md never asks a creature to track either. --}}
+<section class="resources">
+
+  <div class="resource health">
+    <span class="resource-label">{{localize 'MARROW.Health'}}</span>
+    <div class="pair">
+      <input type="number" name="system.health.value" value="{{system.health.value}}" />
+      <span class="slash">/</span>
+      <input type="number" name="system.health.max" value="{{system.health.max}}" />
+    </div>
+    <div class="sub">{{localize 'MARROW.CurrentMax'}}</div>
+  </div>
+
+  <div class="resource wounds{{#if system.dead}} dead{{/if}}">
+    <span class="resource-label">{{localize 'MARROW.Wounds'}}</span>
+    <div class="pair">
+      <input type="number" name="system.wounds.value" value="{{system.wounds.value}}" />
+      <span class="slash">/</span>
+      <input type="number" name="system.wounds.max" value="{{system.wounds.max}}" />
+    </div>
+    <div class="sub">{{localize 'MARROW.TakenMax'}}</div>
+  </div>
+
+  {{!-- XII.5: AP is a threshold, not a pool, so it is shown as one number and not a bar. --}}
+  <div class="resource armor">
+    <span class="resource-label">{{localize 'MARROW.Armor.Label'}}</span>
+    <div class="pair">
+      <span class="derived" data-tooltip="{{localize 'MARROW.APHint'}}">{{system.armor.points}}</span>
+      <span class="slash">·</span>
+      <span class="derived" data-tooltip="{{localize 'MARROW.DRHint'}}">{{system.armor.damageReduction}}</span>
+    </div>
+    <div class="sub">{{localize 'MARROW.APDR'}} <span class="kind">{{armorKindLabel}}</span></div>
+  </div>
+
+</section>
+
+{{#if system.bleeding}}
+  <div class="bleeding-banner">{{localize 'MARROW.Bleeding'}} {{system.bleeding}}</div>
+{{/if}}
