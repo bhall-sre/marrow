@@ -941,6 +941,9 @@
 
 .marrow.chat-card .target-line { margin-top: 4px; font-size: .82rem; color: var(--ink-faint); }
 
+.marrow.chat-card.healing { border-left-color: var(--brass); }
+.marrow.chat-card.healing .total { color: var(--brass); }
+
 .marrow.chat-card.damage-applied .applied-line { font-weight: 600; }
 .marrow.chat-card.damage-applied .note { margin-top: 2px; font-size: .82rem; color: var(--ink-faint); }
 .marrow.chat-card.damage-applied.undone .applied-line {
@@ -1336,8 +1339,9 @@
 .marrow .given-sources .advantage .mark { color: var(--brass); }
 .marrow .given-sources .disadvantage .mark { color: var(--blood); }
 
-/* VIII.2's per-weapon riders, which need a Save and a ruling. */
-.marrow.chat-card .weapon-rider {
+/* VIII.2's per-weapon riders and XVII.2's Working side effects, both of which need a Save
+   and a ruling rather than an automatic number. */
+.marrow.chat-card .rider-note {
   margin-top: 6px;
   padding: 5px 8px;
   font-size: .8rem;

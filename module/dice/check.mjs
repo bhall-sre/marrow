@@ -238,11 +238,24 @@ export async function panicCheck(actor, { sources = [] } = {}) {
   return result;
 }
 
-/** XVI.1's Marks table, once per level gained, only for levels never marked before. */
+/** XVI.1's bands, the same breakpoints character.mjs and companion.mjs derive from. */
+function blightBand(level) {
+  if (level >= 10) return 'undone';
+  if (level >= 7) return 'consumed';
+  if (level >= 4) return 'steeped';
+  if (level >= 1) return 'touched';
+  return 'clean';
+}
+
+/**
+ * The Marks table, rolled once per new band reached rather than once per point -- by
+ * request, since MARROW.md is silent on how often XVI.1's "every time your Blight Level
+ * rises" actually fires and rolling four times for a Blight 2->6 jump felt like noise
+ * rather than four separate marks. See CONVERSION_NOTES.md.
+ */
 export async function rollMarks(actor, from, to) {
   const alreadyMarked = actor.system.blight.marked ?? 0;
-  const first = Math.max(from, alreadyMarked) + 1;
-  for (let level = first; level <= to; level++) {
+  if (blightBand(to) !== blightBand(Math.max(from, alreadyMarked))) {
     await drawSystemTable(MARROW.tables.marks, actor);
   }
   if (to > alreadyMarked) await actor.update({ 'system.blight.marked': to });

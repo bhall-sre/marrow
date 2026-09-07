@@ -83,6 +83,16 @@ Conditions, and Death Saves. 54 of the 70 rows carry a recognised effect; the re
 description ("Rib broken"). Anything a row states that needs a Save or a ruling — "Body Save
 or entangled" — is surfaced on the card rather than applied.
 
+### 8. The Marks table rolls once per band, not once per point — *XVI.1, XVI.2*
+
+Not in `MARROW.md` at all; by request. XVI.1 says "every time your Blight Level rises, roll
+1d10 on the Marks table," which read literally means a jump from Blight 2 to 6 rolls Marks
+four times. `rollMarks` (`module/dice/check.mjs`) now rolls once only when the Blight *band*
+changes (Clean/Touched/Steeped/Consumed/Undone), using the same breakpoints
+`character.mjs`/`companion.mjs` derive `blight.band` from. `blight.marked` still remembers
+the highest level reached, so dropping and regaining Blight within the same band does not
+roll Marks again.
+
 ## Deliberate departures from the old system
 
 This is a rebuild, not a port, so a few things that existed before are gone on purpose:

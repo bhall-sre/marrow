@@ -42,10 +42,12 @@
       "Applied": "Applied {amount} damage to {name}.",
       "ArmorNote": "Their armor was destroyed.",
       "WoundNote": "Took {n} Wound.",
+      "Healed": "Healed {amount} Health on {name}.",
       "UndoneNote": "Undone -- {name} is back where this started.",
       "UndoMissingActor": "That actor no longer exists. Nothing to undo."
     },
     "Undo": "Undo",
+    "Healing": "Healing",
     "Bleeding": "Bleeding",
     "ConditionStatus": "Condition",
     "Damage": "Damage",
@@ -222,6 +224,7 @@
     "Working": {
       "Attempt": "Working — {name}",
       "NeedsBlight": "A Working needs a Blight Level of 1 or higher.",
+      "MendingRider": "The patient gains 1 Stress and must make a Body Save at Disadvantage or gain 1 Blight.",
       "Formula": "Formula",
       "FormulaHint": "Use {B} for the caster's Blight Level, e.g. {B}d10",
       "AtBlight": "At Blight",

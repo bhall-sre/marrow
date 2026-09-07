@@ -1,5 +1,5 @@
 import { MARROW } from '../config.mjs';
-import { drawSystemTable, resolveTable } from './check.mjs';
+import { drawSystemTable, resolveTable, applyConsequences } from './check.mjs';
 import { applyResultEffects } from './effects.mjs';
 
 /**
@@ -212,6 +212,7 @@ function snapshotVitals(actor) {
   if (s.stress) vitals.stress = { value: s.stress.value, base: s.stress.base };
   if (s.stats) vitals.stats = Object.fromEntries(Object.entries(s.stats).map(([k, v]) => [k, v.value]));
   if (s.saves) vitals.saves = Object.fromEntries(Object.entries(s.saves).map(([k, v]) => [k, v.value]));
+  if (s.blight) vitals.blight = { value: s.blight.value, marked: s.blight.marked };
 
   return {
     vitals,
@@ -236,6 +237,9 @@ async function restoreSnapshot(actor, { vitals, armor, conditions }) {
   });
   for (const [k, v] of Object.entries(vitals.stats ?? {})) update[`system.stats.${k}.value`] = v;
   for (const [k, v] of Object.entries(vitals.saves ?? {})) update[`system.saves.${k}.value`] = v;
+  if (vitals.blight) Object.assign(update, {
+    'system.blight.value': vitals.blight.value, 'system.blight.marked': vitals.blight.marked,
+  });
   if (!foundry.utils.isEmpty(update)) await actor.update(update);
 
   const armorUpdates = armor
@@ -279,7 +283,40 @@ export async function applyDamageFromChat(actor, amount, options = {}) {
   });
 }
 
-/** Reverses one applyDamageFromChat call, using the snapshot its own message carries. */
+/**
+ * XVII.2's Mending. Health only -- "you may instead close one Wound" at Blight 5+ is a
+ * choice XVII.2 leaves to the caster, not something to decide on their behalf, so closing a
+ * Wound stays a manual edit on the sheet.
+ */
+export async function applyHealing(actor, amount) {
+  const s = actor.system;
+  if (!s.health) return { healed: 0 };
+  const healed = Math.min(amount, s.health.max - s.health.value);
+  if (healed > 0) await actor.update({ 'system.health.value': s.health.value + healed });
+  return { healed };
+}
+
+/** Mending's Apply button: heals, then charges the Blight XVII.2 asks of the patient. */
+export async function applyHealingFromChat(actor, amount, { blightOnApply = 0 } = {}) {
+  const snapshot = snapshotVitals(actor);
+  const { healed } = await applyHealing(actor, amount);
+  if (blightOnApply > 0 && actor.system.blight) {
+    await applyConsequences(actor, { stress: 0, blight: blightOnApply, panic: false, notes: [] });
+  }
+
+  const html = await foundry.applications.handlebars.renderTemplate(
+    'systems/marrow/templates/chat/damage-applied.hbs',
+    { message: game.i18n.format('MARROW.DamageApplied.Healed', { amount: healed, name: actor.name }) },
+  );
+
+  return ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: html,
+    flags: { marrow: { undo: { actorUuid: actor.uuid, snapshot } } },
+  });
+}
+
+/** Reverses one applyDamageFromChat or applyHealingFromChat, from the snapshot its own message carries. */
 export async function undoDamageApplication(message) {
   const data = message.getFlag('marrow', 'undo');
   if (!data || data.undone) return;

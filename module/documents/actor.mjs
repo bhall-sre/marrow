@@ -99,19 +99,40 @@ export class MarrowActor extends Actor {
 
   /** The damage half of XII.4, posted with a button rather than applied behind the Warden. */
   async rollWeaponDamage(weapon, { target = null, critical = false } = {}) {
-    const roll = await new Roll(weapon.system.damage, this.getRollData()).evaluate();
+    return this.postDamageRoll(weapon.system.damage, {
+      label: weapon.name,
+      damageType: weapon.system.damageType,
+      damageTypeLabel: weapon.system.damageTypeLabel,
+      antiArmor: weapon.system.antiArmor,
+      notes: weapon.system.notes,
+      target,
+      critical,
+    });
+  }
+
+  /**
+   * A damage roll with an Apply button, the shape XII.4 (a weapon) and XVII.2 (Ruin) both
+   * need. Who it lands on and whether their armour survives it is a decision for whoever
+   * clicks Apply, not something this rolls into automatically.
+   */
+  async postDamageRoll(formula, {
+    label, damageType, damageTypeLabel, antiArmor = false, notes = null,
+    target = null, critical = false,
+  } = {}) {
+    const roll = await new Roll(formula, this.getRollData()).evaluate();
 
     const html = await foundry.applications.handlebars.renderTemplate(
       'systems/marrow/templates/chat/damage.hbs',
       {
         actor: this,
-        weapon,
+        label,
         roll,
         total: roll.total,
         critical,
-        damageType: weapon.system.damageType,
-        damageTypeLabel: weapon.system.damageTypeLabel,
-        antiArmor: weapon.system.antiArmor,
+        damageType,
+        damageTypeLabel,
+        antiArmor,
+        notes,
         targetName: target?.name ?? null,
         targetUuid: target?.uuid ?? null,
       },
@@ -123,14 +144,41 @@ export class MarrowActor extends Actor {
       rolls: [roll],
       flags: {
         marrow: {
-          damage: {
-            amount: roll.total,
-            damageType: weapon.system.damageType,
-            antiArmor: weapon.system.antiArmor,
-            targetUuid: target?.uuid ?? null,
-          },
+          damage: { amount: roll.total, damageType, antiArmor, targetUuid: target?.uuid ?? null },
         },
       },
+    });
+  }
+
+  /**
+   * XVII.2's Mending: a roll with an Apply button like postDamageRoll, only healing.
+   * @param {number} [opts.blightOnApply]  added to the target when Apply is clicked (Mending
+   *   costs the patient a Blight if they fail the Body Save XVII.2 asks for -- surfaced as a
+   *   note rather than rolled, but the [+]Blight itself is not optional, so it lands with
+   *   the healing rather than waiting on a second click).
+   */
+  async postHealingRoll(formula, { label, notes = null, target = null, blightOnApply = 0 } = {}) {
+    const roll = await new Roll(formula, this.getRollData()).evaluate();
+
+    const html = await foundry.applications.handlebars.renderTemplate(
+      'systems/marrow/templates/chat/healing.hbs',
+      {
+        actor: this,
+        label,
+        roll,
+        total: roll.total,
+        notes,
+        blightOnApply,
+        targetName: target?.name ?? null,
+        targetUuid: target?.uuid ?? null,
+      },
+    );
+
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this }),
+      content: html,
+      rolls: [roll],
+      flags: { marrow: { healing: { amount: roll.total, blightOnApply, targetUuid: target?.uuid ?? null } } },
     });
   }
 
@@ -213,6 +261,11 @@ export class MarrowActor extends Actor {
       return null;
     }
 
+    const target = options.target ?? game.user.targets.first()?.actor ?? null;
+    // Read before the Save, not after: a Failure's own Blight gain is the cost of THIS cast,
+    // not a retroactive buff to it. Ruin scales on the Blight Level spent to attempt it.
+    const blight = this.system.blight.value;
+
     const result = await new MarrowCheck(this, {
       key: this.system.saves ? 'sanity' : 'instinct',
       kind: 'working',
@@ -221,6 +274,26 @@ export class MarrowActor extends Actor {
       flavor: game.i18n.format('MARROW.Working.Attempt', { name: working.name }),
       ...options,
     }).evaluate();
+
+    // XVII.1: "The Working always happens." Ruin's damage and Mending's healing are not
+    // contingent on the Save -- only the Stress/Blight cost the check above handled is.
+    if (working.name === 'RUIN') {
+      await this.postDamageRoll(working.system.scaled(blight), {
+        label: working.name,
+        damageType: 'goreMassive',
+        damageTypeLabel: MARROW.damageTypes.goreMassive.label,
+        // XVII.2: "At Blight 5 or higher it is Anti-Armor."
+        antiArmor: blight >= 5,
+        target,
+      });
+    } else if (working.name === 'THE MENDING') {
+      await this.postHealingRoll(working.system.scaled(blight), {
+        label: working.name,
+        notes: game.i18n.localize('MARROW.Working.MendingRider'),
+        target: target ?? this,
+        blightOnApply: 1,
+      });
+    }
 
     // The Calling's own table is rolled by the Warden in private, after the Working.
     if (working.system.wardenTable) {

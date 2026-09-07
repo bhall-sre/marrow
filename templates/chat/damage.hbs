@@ -6,7 +6,7 @@
 <div class="marrow chat-card damage{{#if critical}} critical{{/if}}">
 
   <header class="card-head">
-    <span class="what">{{weapon.name}}</span>
+    <span class="what">{{label}}</span>
     <span class="damage-type">{{damageTypeLabel}}</span>
   </header>
 
@@ -18,10 +18,10 @@
 
   {{#if targetName}}<div class="target-line">{{localize 'MARROW.Against'}} {{targetName}}</div>{{/if}}
 
-  {{#if weapon.system.notes}}
+  {{#if notes}}
     {{!-- VIII.2's per-weapon riders -- "Body Save or entangled", "or set alight" -- need a
           Save and a ruling, so they are put in front of the Warden rather than applied. --}}
-    <div class="weapon-rider">{{weapon.system.notes}}</div>
+    <div class="rider-note">{{notes}}</div>
   {{/if}}
 
   <div class="card-buttons">

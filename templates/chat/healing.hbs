@@ -1,0 +1,32 @@
+{{!--
+  XVII.2's Mending, and anything else that heals rather than harms. Nothing is applied from
+  here automatically -- same reasoning as damage.hbs, the Apply button makes it one click
+  once someone decides who it lands on.
+--}}
+<div class="marrow chat-card healing">
+
+  <header class="card-head">
+    <span class="what">{{label}}</span>
+    <span class="damage-type">{{localize 'MARROW.Healing'}}</span>
+  </header>
+
+  <div class="roll-line">
+    <span class="total">{{total}}</span>
+    <span class="vs">{{localize 'MARROW.Health'}}</span>
+  </div>
+
+  {{#if targetName}}<div class="target-line">{{localize 'MARROW.Against'}} {{targetName}}</div>{{/if}}
+
+  {{#if notes}}
+    <div class="rider-note">{{notes}}</div>
+  {{/if}}
+
+  <div class="card-buttons">
+    <button type="button" data-action="applyHealing" data-amount="{{total}}"
+            {{#if blightOnApply}}data-blight="{{blightOnApply}}"{{/if}}
+            {{#if targetUuid}}data-target-uuid="{{targetUuid}}"{{/if}}>
+      {{localize 'MARROW.Apply'}}
+    </button>
+  </div>
+
+</div>

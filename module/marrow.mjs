@@ -13,7 +13,7 @@ import { MarrowCreatureSheet } from './sheets/creature-sheet.mjs';
 import { MarrowItemSheet } from './sheets/item-sheet.mjs';
 import { registerHelpers, preloadTemplates } from './helpers.mjs';
 import { registerSettings } from './settings.mjs';
-import { applyDamageFromChat, undoDamageApplication } from './dice/damage.mjs';
+import { applyDamageFromChat, applyHealingFromChat, undoDamageApplication } from './dice/damage.mjs';
 import { CharacterCreation, registerCreationButton } from './apps/creation.mjs';
 
 Hooks.once('init', () => {
@@ -94,22 +94,26 @@ function registerSheets() {
  * XII.4/XII.5: damage is posted with buttons rather than applied on its own, because who it
  * lands on -- and whether their armour survives it -- is a decision the Warden makes.
  */
+/**
+ * The roll recorded who it actually landed on. Falling back to whatever is selected on the
+ * canvas is only for older messages rolled before that was tracked -- otherwise applying
+ * damage or healing after re-selecting your own token hits you, not the target.
+ */
+async function resolveApplyTargets(targetUuid) {
+  if (targetUuid) {
+    const target = await fromUuid(targetUuid);
+    return target ? [target] : [];
+  }
+  return canvas.tokens.controlled.map(t => t.actor).filter(Boolean);
+}
+
 Hooks.on('renderChatMessageHTML', (message, html) => {
   for (const button of html.querySelectorAll('[data-action="applyDamage"]')) {
     button.addEventListener('click', async (event) => {
       event.preventDefault();
       const { amount, damageType, antiArmor, ignoreArmor, targetUuid } = button.dataset;
 
-      // The attack roll recorded who it actually landed on. Falling back to whatever is
-      // selected on the canvas is only for older messages rolled before that was tracked --
-      // otherwise applying damage after re-selecting your own token hits you, not the target.
-      let targets;
-      if (targetUuid) {
-        const target = await fromUuid(targetUuid);
-        targets = target ? [target] : [];
-      } else {
-        targets = canvas.tokens.controlled.map(t => t.actor).filter(Boolean);
-      }
+      const targets = await resolveApplyTargets(targetUuid);
       if (!targets.length) {
         ui.notifications.warn(game.i18n.localize('MARROW.SelectATarget'));
         return;
@@ -122,6 +126,24 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
           antiArmor: antiArmor === 'true',
           ignoreArmor: ignoreArmor === 'true',
         });
+      }
+    });
+  }
+
+  for (const button of html.querySelectorAll('[data-action="applyHealing"]')) {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const { amount, blight, targetUuid } = button.dataset;
+
+      const targets = await resolveApplyTargets(targetUuid);
+      if (!targets.length) {
+        ui.notifications.warn(game.i18n.localize('MARROW.SelectATarget'));
+        return;
+      }
+
+      button.disabled = true;
+      for (const actor of targets) {
+        await applyHealingFromChat(actor, Number(amount), { blightOnApply: Number(blight ?? 0) });
       }
     });
   }
@@ -152,6 +174,35 @@ for (const hook of ['createItem', 'updateItem', 'deleteItem']) {
     if (item.type === 'condition') syncConditionStatus(item.actor);
   });
 }
+
+/**
+ * XVII: "Anyone with a Blight Level of 1 or higher may attempt a Working. You do not need
+ * training." Unlike a Skill, a Working is not something you choose to learn -- every
+ * Blighted actor can attempt all seven the moment they cross into Blight 1, so the sheet
+ * grants them automatically rather than making anyone drag seven items over one at a time.
+ */
+async function grantWorkingsIfBlighted(actor) {
+  if (!actor || (actor.system.blight?.value ?? 0) < 1) return;
+  const pack = game.packs.get('marrow.workings');
+  if (!pack) return;
+  await pack.getIndex();
+
+  const held = new Set(actor.items.filter(i => i.type === 'working').map(i => i.name));
+  const toAdd = [];
+  for (const entry of pack.index) {
+    if (held.has(entry.name)) continue;
+    const doc = await pack.getDocument(entry._id);
+    toAdd.push(doc.toObject());
+  }
+  if (toAdd.length) await actor.createEmbeddedDocuments('Item', toAdd);
+}
+
+Hooks.on('updateActor', (actor, changes) => {
+  if (foundry.utils.hasProperty(changes, 'system.blight.value')) grantWorkingsIfBlighted(actor);
+});
+// The creation wizard can hand a Blighted class its starting Blight at creation itself
+// (Actor.create with the value already in system data), which updateActor never sees.
+Hooks.on('createActor', (actor) => grantWorkingsIfBlighted(actor));
 
 /**
  * XIII.1: "you take 1 damage every round until it is stopped." Bleeding is the one thing in
