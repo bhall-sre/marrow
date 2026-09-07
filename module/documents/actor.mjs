@@ -152,12 +152,10 @@ export class MarrowActor extends Actor {
 
   /**
    * XVII.2's Mending: a roll with an Apply button like postDamageRoll, only healing.
-   * @param {number} [opts.blightOnApply]  added to the target when Apply is clicked (Mending
-   *   costs the patient a Blight if they fail the Body Save XVII.2 asks for -- surfaced as a
-   *   note rather than rolled, but the [+]Blight itself is not optional, so it lands with
-   *   the healing rather than waiting on a second click).
+   * @param {boolean} [opts.mendingSave]  when Apply is clicked, charge the patient 1 Stress
+   *   and roll the Body Save at Disadvantage XVII.2 asks for, taking 1 Blight on a failure.
    */
-  async postHealingRoll(formula, { label, notes = null, target = null, blightOnApply = 0 } = {}) {
+  async postHealingRoll(formula, { label, notes = null, target = null, mendingSave = false } = {}) {
     const roll = await new Roll(formula, this.getRollData()).evaluate();
 
     const html = await foundry.applications.handlebars.renderTemplate(
@@ -168,7 +166,7 @@ export class MarrowActor extends Actor {
         roll,
         total: roll.total,
         notes,
-        blightOnApply,
+        mendingSave,
         targetName: target?.name ?? null,
         targetUuid: target?.uuid ?? null,
       },
@@ -178,7 +176,7 @@ export class MarrowActor extends Actor {
       speaker: ChatMessage.getSpeaker({ actor: this }),
       content: html,
       rolls: [roll],
-      flags: { marrow: { healing: { amount: roll.total, blightOnApply, targetUuid: target?.uuid ?? null } } },
+      flags: { marrow: { healing: { amount: roll.total, mendingSave, targetUuid: target?.uuid ?? null } } },
     });
   }
 
@@ -291,7 +289,7 @@ export class MarrowActor extends Actor {
         label: working.name,
         notes: game.i18n.localize('MARROW.Working.MendingRider'),
         target: target ?? this,
-        blightOnApply: 1,
+        mendingSave: true,
       });
     }
 

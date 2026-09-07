@@ -23,7 +23,7 @@
 
   <div class="card-buttons">
     <button type="button" data-action="applyHealing" data-amount="{{total}}"
-            {{#if blightOnApply}}data-blight="{{blightOnApply}}"{{/if}}
+            {{#if mendingSave}}data-mending-save="true"{{/if}}
             {{#if targetUuid}}data-target-uuid="{{targetUuid}}"{{/if}}>
       {{localize 'MARROW.Apply'}}
     </button>

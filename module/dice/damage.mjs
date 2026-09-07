@@ -1,6 +1,7 @@
 import { MARROW } from '../config.mjs';
-import { drawSystemTable, resolveTable, applyConsequences } from './check.mjs';
+import { MarrowCheck, drawSystemTable, resolveTable, applyConsequences } from './check.mjs';
 import { applyResultEffects } from './effects.mjs';
+import { DISADVANTAGE } from './roll.mjs';
 
 /**
  * Damage, armour, Wounds and death.
@@ -296,17 +297,38 @@ export async function applyHealing(actor, amount) {
   return { healed };
 }
 
-/** Mending's Apply button: heals, then charges the Blight XVII.2 asks of the patient. */
-export async function applyHealingFromChat(actor, amount, { blightOnApply = 0 } = {}) {
+/**
+ * Mending's Apply button. XVII.2, in full: heal, then "the patient gains 1 Stress, and must
+ * make a Body Save at Disadvantage or gain 1 Blight." The Stress is unconditional; the Save
+ * decides the Blight, so it is rolled rather than assumed either way.
+ */
+export async function applyHealingFromChat(actor, amount, { mendingSave = false } = {}) {
   const snapshot = snapshotVitals(actor);
   const { healed } = await applyHealing(actor, amount);
-  if (blightOnApply > 0 && actor.system.blight) {
-    await applyConsequences(actor, { stress: 0, blight: blightOnApply, panic: false, notes: [] });
+  const notes = [];
+
+  if (mendingSave) {
+    if (actor.system.stress) {
+      const floor = actor.system.stress.min ?? actor.system.stress.base ?? 0;
+      const next = Math.clamp(actor.system.stress.value + 1, floor, actor.system.stress.max ?? 20);
+      await actor.update({ 'system.stress.value': next });
+      notes.push(game.i18n.localize('MARROW.DamageApplied.MendingStress'));
+    }
+    const key = actor.system.saves ? 'body' : 'instinct';
+    const result = await new MarrowCheck(actor, {
+      key,
+      sources: [{ source: game.i18n.localize('MARROW.Working.Attempt', { name: 'THE MENDING' }), effect: DISADVANTAGE }],
+      flavor: game.i18n.localize('MARROW.Working.MendingSaveFlavor'),
+    }).evaluate({ apply: false });
+    if (!result.success && actor.system.blight) {
+      await applyConsequences(actor, { stress: 0, blight: 1, panic: false, notes: [] });
+      notes.push(game.i18n.localize('MARROW.DamageApplied.MendingBlight'));
+    }
   }
 
   const html = await foundry.applications.handlebars.renderTemplate(
     'systems/marrow/templates/chat/damage-applied.hbs',
-    { message: game.i18n.format('MARROW.DamageApplied.Healed', { amount: healed, name: actor.name }) },
+    { message: game.i18n.format('MARROW.DamageApplied.Healed', { amount: healed, name: actor.name }), notes },
   );
 
   return ChatMessage.create({

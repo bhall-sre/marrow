@@ -133,7 +133,7 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
   for (const button of html.querySelectorAll('[data-action="applyHealing"]')) {
     button.addEventListener('click', async (event) => {
       event.preventDefault();
-      const { amount, blight, targetUuid } = button.dataset;
+      const { amount, mendingSave, targetUuid } = button.dataset;
 
       const targets = await resolveApplyTargets(targetUuid);
       if (!targets.length) {
@@ -143,7 +143,7 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
 
       button.disabled = true;
       for (const actor of targets) {
-        await applyHealingFromChat(actor, Number(amount), { blightOnApply: Number(blight ?? 0) });
+        await applyHealingFromChat(actor, Number(amount), { mendingSave: mendingSave === 'true' });
       }
     });
   }
