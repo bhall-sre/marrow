@@ -1,0 +1,18 @@
+{{!--
+  Posted once the Warden actually clicks Apply, so the log says who it landed on rather than
+  leaving that to be inferred from the roll above it. The Undo button puts the same actor back
+  exactly where the snapshot found them.
+--}}
+<div class="marrow chat-card damage-applied{{#if undone}} undone{{/if}}">
+  <p class="applied-line">{{message}}</p>
+
+  {{#each notes as |n|}}
+    <p class="note">{{n}}</p>
+  {{/each}}
+
+  {{#unless undone}}
+    <div class="card-buttons">
+      <button type="button" data-action="undoDamage">{{localize 'MARROW.Undo'}}</button>
+    </div>
+  {{/unless}}
+</div>

@@ -94,6 +94,7 @@ export class MarrowActor extends Actor {
         damageTypeLabel: weapon.system.damageTypeLabel,
         antiArmor: weapon.system.antiArmor,
         targetName: target?.name ?? null,
+        targetUuid: target?.uuid ?? null,
       },
     );
 
@@ -107,6 +108,7 @@ export class MarrowActor extends Actor {
             amount: roll.total,
             damageType: weapon.system.damageType,
             antiArmor: weapon.system.antiArmor,
+            targetUuid: target?.uuid ?? null,
           },
         },
       },

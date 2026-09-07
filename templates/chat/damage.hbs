@@ -26,7 +26,8 @@
 
   <div class="card-buttons">
     <button type="button" data-action="applyDamage" data-amount="{{total}}"
-            data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}">
+            data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}"
+            {{#if targetUuid}}data-target-uuid="{{targetUuid}}"{{/if}}>
       {{localize 'MARROW.Apply'}}
     </button>
   </div>

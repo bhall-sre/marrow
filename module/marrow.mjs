@@ -11,7 +11,7 @@ import { MarrowCompanionSheet } from './sheets/companion-sheet.mjs';
 import { MarrowItemSheet } from './sheets/item-sheet.mjs';
 import { registerHelpers, preloadTemplates } from './helpers.mjs';
 import { registerSettings } from './settings.mjs';
-import { applyDamage } from './dice/damage.mjs';
+import { applyDamageFromChat, undoDamageApplication } from './dice/damage.mjs';
 import { CharacterCreation, registerCreationButton } from './apps/creation.mjs';
 
 Hooks.once('init', () => {
@@ -84,21 +84,38 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
   for (const button of html.querySelectorAll('[data-action="applyDamage"]')) {
     button.addEventListener('click', async (event) => {
       event.preventDefault();
-      const { amount, damageType, antiArmor, ignoreArmor } = button.dataset;
+      const { amount, damageType, antiArmor, ignoreArmor, targetUuid } = button.dataset;
 
-      const targets = canvas.tokens.controlled.map(t => t.actor).filter(Boolean);
+      // The attack roll recorded who it actually landed on. Falling back to whatever is
+      // selected on the canvas is only for older messages rolled before that was tracked --
+      // otherwise applying damage after re-selecting your own token hits you, not the target.
+      let targets;
+      if (targetUuid) {
+        const target = await fromUuid(targetUuid);
+        targets = target ? [target] : [];
+      } else {
+        targets = canvas.tokens.controlled.map(t => t.actor).filter(Boolean);
+      }
       if (!targets.length) {
         ui.notifications.warn(game.i18n.localize('MARROW.SelectATarget'));
         return;
       }
 
+      button.disabled = true;
       for (const actor of targets) {
-        await applyDamage(actor, Number(amount), {
+        await applyDamageFromChat(actor, Number(amount), {
           damageType,
           antiArmor: antiArmor === 'true',
           ignoreArmor: ignoreArmor === 'true',
         });
       }
+    });
+  }
+
+  for (const button of html.querySelectorAll('[data-action="undoDamage"]')) {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await undoDamageApplication(message);
     });
   }
 });

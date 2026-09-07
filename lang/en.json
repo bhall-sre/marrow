@@ -36,6 +36,14 @@
       "Label": "Armor",
       "Destroyed": "{name}'s armor is destroyed ({n})."
     },
+    "DamageApplied": {
+      "Applied": "Applied {amount} damage to {name}.",
+      "ArmorNote": "Their armor was destroyed.",
+      "WoundNote": "Took {n} Wound.",
+      "UndoneNote": "Undone -- {name} is back where this started.",
+      "UndoMissingActor": "That actor no longer exists. Nothing to undo."
+    },
+    "Undo": "Undo",
     "Bleeding": "Bleeding",
     "Damage": "Damage",
     "DamageType": "Wound Type",

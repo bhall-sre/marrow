@@ -930,6 +930,14 @@
 
 .marrow.chat-card .target-line { margin-top: 4px; font-size: .82rem; color: var(--ink-faint); }
 
+.marrow.chat-card.damage-applied .applied-line { font-weight: 600; }
+.marrow.chat-card.damage-applied .note { margin-top: 2px; font-size: .82rem; color: var(--ink-faint); }
+.marrow.chat-card.damage-applied.undone .applied-line {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
 .marrow.chat-card .card-buttons { display: flex; gap: 5px; margin-top: 8px; }
 
 .marrow.chat-card .card-buttons button {

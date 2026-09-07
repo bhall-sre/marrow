@@ -198,3 +198,102 @@ export async function tickBleeding(actor) {
   if (bleeding <= 0) return null;
   return applyDamage(actor, bleeding, { damageType: 'bleeding', ignoreArmor: true });
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Applying damage from the chat card, with an Undo                          */
+/* -------------------------------------------------------------------------- */
+
+/** Everything applyDamage (and the Wound/Condition effects it triggers) can change. */
+function snapshotVitals(actor) {
+  const s = actor.system;
+  const vitals = {};
+  if (s.health) vitals.health = { value: s.health.value, max: s.health.max };
+  if (s.wounds) vitals.wounds = { value: s.wounds.value };
+  if (s.stress) vitals.stress = { value: s.stress.value, base: s.stress.base };
+  if (s.stats) vitals.stats = Object.fromEntries(Object.entries(s.stats).map(([k, v]) => [k, v.value]));
+  if (s.saves) vitals.saves = Object.fromEntries(Object.entries(s.saves).map(([k, v]) => [k, v.value]));
+
+  return {
+    vitals,
+    armor: actor.items.filter(i => i.type === 'armor').map(i => ({ id: i.id, state: i.system.state })),
+    conditions: actor.items.filter(i => i.type === 'condition')
+      .map(i => ({ id: i.id, bleeding: i.system.bleeding })),
+  };
+}
+
+/**
+ * Put an actor back exactly how a snapshot found it: the scalar numbers, each armor's state,
+ * each surviving Condition's Bleeding total, and delete whatever Conditions did not exist yet.
+ */
+async function restoreSnapshot(actor, { vitals, armor, conditions }) {
+  const update = {};
+  if (vitals.health) Object.assign(update, {
+    'system.health.value': vitals.health.value, 'system.health.max': vitals.health.max,
+  });
+  if (vitals.wounds) update['system.wounds.value'] = vitals.wounds.value;
+  if (vitals.stress) Object.assign(update, {
+    'system.stress.value': vitals.stress.value, 'system.stress.base': vitals.stress.base,
+  });
+  for (const [k, v] of Object.entries(vitals.stats ?? {})) update[`system.stats.${k}.value`] = v;
+  for (const [k, v] of Object.entries(vitals.saves ?? {})) update[`system.saves.${k}.value`] = v;
+  if (!foundry.utils.isEmpty(update)) await actor.update(update);
+
+  const armorUpdates = armor
+    .filter(a => actor.items.get(a.id)?.system.state !== a.state)
+    .map(a => ({ _id: a.id, 'system.state': a.state }));
+  if (armorUpdates.length) await actor.updateEmbeddedDocuments('Item', armorUpdates);
+
+  const keptIds = new Set(conditions.map(c => c.id));
+  const conditionUpdates = conditions
+    .filter(c => actor.items.get(c.id) && actor.items.get(c.id).system.bleeding !== c.bleeding)
+    .map(c => ({ _id: c.id, 'system.bleeding': c.bleeding }));
+  if (conditionUpdates.length) await actor.updateEmbeddedDocuments('Item', conditionUpdates);
+
+  const createdIds = actor.items.filter(i => i.type === 'condition' && !keptIds.has(i.id)).map(i => i.id);
+  if (createdIds.length) await actor.deleteEmbeddedDocuments('Item', createdIds);
+}
+
+/**
+ * XII.4/XII.5's Apply button: snapshot the actor first, so a misclick -- or damage landing on
+ * the wrong token -- has a way back that doesn't require reconstructing it by hand.
+ */
+export async function applyDamageFromChat(actor, amount, options = {}) {
+  const snapshot = snapshotVitals(actor);
+  const outcome = await applyDamage(actor, amount, options);
+
+  const notes = [];
+  if (outcome.armorDestroyed) notes.push(game.i18n.localize('MARROW.DamageApplied.ArmorNote'));
+  if (outcome.rolledWounds > 0) {
+    notes.push(game.i18n.format('MARROW.DamageApplied.WoundNote', { n: outcome.rolledWounds }));
+  }
+
+  const html = await foundry.applications.handlebars.renderTemplate(
+    'systems/marrow/templates/chat/damage-applied.hbs',
+    { message: game.i18n.format('MARROW.DamageApplied.Applied', { amount: outcome.applied, name: actor.name }), notes },
+  );
+
+  return ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: html,
+    flags: { marrow: { undo: { actorUuid: actor.uuid, snapshot } } },
+  });
+}
+
+/** Reverses one applyDamageFromChat call, using the snapshot its own message carries. */
+export async function undoDamageApplication(message) {
+  const data = message.getFlag('marrow', 'undo');
+  if (!data || data.undone) return;
+
+  const actor = await fromUuid(data.actorUuid);
+  if (!actor) {
+    ui.notifications?.warn(game.i18n.localize('MARROW.DamageApplied.UndoMissingActor'));
+    return;
+  }
+  await restoreSnapshot(actor, data.snapshot);
+
+  const html = await foundry.applications.handlebars.renderTemplate(
+    'systems/marrow/templates/chat/damage-applied.hbs',
+    { message: game.i18n.format('MARROW.DamageApplied.UndoneNote', { name: actor.name }), undone: true },
+  );
+  await message.update({ content: html, 'flags.marrow.undo.undone': true });
+}
