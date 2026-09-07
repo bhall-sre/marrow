@@ -10,7 +10,7 @@ one way when it could reasonably be read another.
 These are places where `MARROW.md` is genuinely ambiguous. In each case I took the reading
 that invents the least, and each is a small, isolated change if you rule the other way.
 
-### 1. The Blighted's first three levels — *II, XVI.1*
+### 1. The Blighted's first three levels — *II, XVI.1* — **SETTLED**
 
 II says the Blighted "begin play at **Blight 3**. The penalties for those first three levels
 are **already accounted for in the adjustments above**."
@@ -29,15 +29,17 @@ exemption mechanic that appears nowhere in the text.
 Reading (b) does leave the Blighted's Strength, Speed and Combat sitting at −3 with no
 compensating bonus, which is what makes me want your confirmation.
 
-*If you rule (a):* add an exemption field to `CharacterData` and change the penalty in
-`prepareDerivedData()` from `blight` to `Math.max(0, blight - exempt)`. Roughly six lines in
-`module/data/character.mjs`.
+**Settled by the working port**, which applied the −1 uniformly with no exemption
+(`actor.js:81`, "Apply -1 per Blight Level directly to every Stat and Save"). This build
+does the same, and additionally sets the Blight 3 that II specifies — the port never did,
+so a Blighted character there started at Blight 0 unless someone typed it in.
 
-### 2. Does the Blight penalty reach a Retainer? — *XVI.1, XX*
+### 2. Does the Blight penalty reach a Retainer? — *XVI.1, XX* — **SETTLED**
 
 XX's hiring table gives Touched retainers Combat 20 / Instinct 35 alongside a starting
-**Blight 4**. Same question as above, same answer: the table numbers are treated as written,
-and the −4 applies on top. See `module/data/companion.mjs`.
+**Blight 4**. Same question as above, and the same answer: uniform, as the port did. The
+table numbers are treated as written and the −4 applies on top. See
+`module/data/companion.mjs`.
 
 ### 3. Thaumaturgy's prerequisite — *III.4 vs III.5*
 
@@ -101,10 +103,8 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
 - **Character creation** (I) — all nine steps, from the Actors directory. It enforces what
   MARROW.md states as a mechanic (the dice, the Class adjustments, III's prerequisite rule)
   and *shows* what it leaves to judgement (each Class's Skills allowance, which is prose).
-  Loadout entries are matched against the compendiums; `tools/check_loadouts.py` reports how
-  many resolve — currently 120 of 154. The remainder are things MARROW.md never stats
-  ("a cat", "a knucklebone it likes") and become gear items carrying their own text, so no
-  entry is ever silently dropped.
+  All 154 Loadout entries resolve to a compendium item; `validate.py` fails if any stops
+  doing so.
 
 ## Not done yet
 

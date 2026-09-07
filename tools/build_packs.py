@@ -283,6 +283,91 @@ def build_gear() -> dict:
     return docs
 
 
+STOPWORDS = {"and", "of", "the", "a"}
+
+
+def normalize(name: str) -> str:
+    """Must match CharacterCreation.#normalize in module/apps/creation.mjs."""
+    words = re.sub(r"[^a-z0-9]+", " ", name.lower().replace("&", " and ")).split()
+    out = []
+    for word in words:
+        if word in STOPWORDS:
+            continue
+        if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+            word = word[:-1]
+        out.append(word)
+    return " ".join(out)
+
+
+def split_loadout(text: str) -> list[str]:
+    """Must match CharacterCreation.#splitLoadout: commas outside brackets, and a clause
+    opening with "and" belongs to the part before it."""
+    parts, depth, current = [], 0, ""
+    for ch in text:
+        if ch == "(":
+            depth += 1
+        if ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += ch
+    if current.strip():
+        parts.append(current.strip())
+
+    out: list[str] = []
+    for part in (x for x in parts if x):
+        if out and re.match(r"^and\s", part, re.I):
+            out[-1] += f", {part}"
+        else:
+            out.append(part)
+    return out
+
+
+def build_loadout_gear(existing: dict) -> dict:
+    """Every V. Loadout entry that no other pack answers to, as a gear item.
+
+    A Loadout line is a sentence, and a good third of what it names -- a cat, a war dog, a
+    great helm, a jug of ale and no memory of last night -- has no stat line anywhere in
+    MARROW.md. Those are still things you own, so they become gear here rather than being
+    invented at creation time on every character. The name is the table's own text.
+    """
+    index = {}
+    for docs in existing.values():
+        for doc in docs.values():
+            for key in (normalize(doc["name"]),
+                        normalize(re.sub(r"\([^)]*\)", "", doc["name"]))):
+                if key:
+                    index.setdefault(key, doc)
+
+    def lookup(base):
+        key = normalize(base)
+        if not key:
+            return None
+        if key in index:
+            return index[key]
+        return next((d for c, d in index.items() if c.startswith(key + " ")), None)
+
+    docs = {}
+    for heading in ("SOLDIER", "BLIGHTED", "SCHOLAR", "LABORER"):
+        for row in ms.table(heading):
+            for part in split_loadout(Marrow.plain(row[1])):
+                base = re.sub(r"\([^)]*\)", "", part).strip()
+                if lookup(base):
+                    continue
+                name = part[0].upper() + part[1:]
+                if name in docs:
+                    continue
+                docs[name] = item("gear", name, "gear", {
+                    "description": f"<p>{name}</p>",
+                    "cost": 0,
+                    "quantity": 1,
+                    "category": "gear",
+                })
+    return docs
+
+
 def build_treatments() -> dict:
     docs = {}
     for row in ms.table("XVIII.2 REAL"):
@@ -489,14 +574,12 @@ def table_doc(pack: str, name: str, formula: str, rows: list[tuple[int, int, str
         results.append({
             "_id": doc_id(pack, f"{name}#{low}-{high}#{i}"),
             "type": "text",
-            "text": text,
+            "name": "",
             "description": text,
-            "img": None,
+            "img": ICON["table"],
             "weight": 1,
             "range": [low, high],
             "drawn": False,
-            "documentCollection": None,
-            "documentId": None,
             "flags": {},
         })
 
@@ -513,7 +596,10 @@ def table_doc(pack: str, name: str, formula: str, rows: list[tuple[int, int, str
         "ownership": {"default": 0},
         "flags": {},
         "_stats": {"systemId": "marrow", "systemVersion": "0.1.0"},
-        "results": [],
+        # Foundry stores each result under its own key, and the table lists their ids here.
+        # Left empty, the compendium opens with a table that has no rows -- which is exactly
+        # how it looked. Verified against a real Foundry pack.
+        "results": [r["_id"] for r in results],
     }
     return doc, results
 
@@ -619,11 +705,20 @@ def as_item_pack(docs: dict) -> dict:
     return {f"!items!{d['_id']}": d for d in docs.values()}
 
 
+def build_gear_pack() -> dict:
+    """IX's gear, plus everything the Loadouts name that nothing else covers."""
+    gear = build_gear()
+    others = {"weapons": build_weapons(), "armor": build_armor(),
+              "gear": gear, "treatments": build_treatments()}
+    gear.update(build_loadout_gear(others))
+    return gear
+
+
 BUILDERS = {
     "skills": lambda: as_item_pack(build_skills()),
     "weapons": lambda: as_item_pack(build_weapons()),
     "armor": lambda: as_item_pack(build_armor()),
-    "gear": lambda: as_item_pack(build_gear()),
+    "gear": lambda: as_item_pack(build_gear_pack()),
     "treatments": lambda: as_item_pack(build_treatments()),
     "trinkets": lambda: as_item_pack(build_hundred_items("VI. TRINKETS", "trinkets", "trinket")),
     "crests": lambda: as_item_pack(build_hundred_items("VII. CRESTS", "crests", "crest")),

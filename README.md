@@ -43,11 +43,14 @@ Foundry; `validate.py` fails on that.
 
 ## Licensing
 
-The **code** in this repository is MIT (see `LICENSE`) — permissive, short, and the usual
-choice for a Foundry system, since the point of a system is that other people can build on
-and fork it.
+Two licences, and the split matters.
 
-The **game text** is a different question. `MARROW.md` and the compendium content generated
-from it are the author's own creative work, and MIT is probably not what you want for them.
-If you intend to publish, say so explicitly — a common arrangement is code under MIT and the
-text under a separate reserved or Creative Commons grant.
+**The game — all rights reserved.** `MARROW.md` and everything generated from it (the whole
+of `packs/`, and `lang/en.json`) is copyright and may not be copied, redistributed, adapted,
+or included in anything else without written permission. Play with it freely; do not
+republish it. Its presence in a public repository grants no licence.
+
+**The code — MIT.** Everything under `module/`, `css/`, `templates/`, `tools/`, and
+`system.json`. Fork it, build on it, ship it.
+
+See `LICENSE` for both in full.

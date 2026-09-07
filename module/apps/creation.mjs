@@ -371,37 +371,6 @@ export class CharacterCreation extends HandlebarsApplicationMixin(ApplicationV2)
       created.push(data);
     }
 
-      const data = match.toObject();
-
-      // What "(xN)" means depends on what it is attached to, and getting this wrong is how
-      // a player ends up with four braces of javelins or fifteen doses of blight-purge.
-      if (quantity > 1) {
-        const bundle = data.name.match(/\(x(\d+)\)/i);
-        if (data.type === 'weapon') {
-          // The count is the weapon's ammunition, not a number of weapons: "brace of
-          // javelins (x4)" is one brace holding four.
-          if (data.system.ammo.max > 0) {
-            data.system.ammo = { value: quantity, max: quantity };
-          }
-        } else if (bundle) {
-          // The pack entry is itself a bundle sold in a fixed size. The Loadout's count is
-          // the true one, so keep the item and take its name from the table: three doses of
-          // blight-purge, not three five-packs and not five doses.
-          if (Number(bundle[1]) !== quantity) {
-            data.name = data.name.replace(/\(x\d+\)/i, `(x${quantity})`);
-          }
-        } else {
-          data.system.quantity = quantity;
-        }
-      }
-      if (annotation) {
-        data.system.notes = [data.system.notes, annotation].filter(Boolean).join(' ');
-      }
-      if (data.type === 'weapon' || data.type === 'armor') data.system.equipped = true;
-      created.push(data);
-    }
-    flushPending();
-
     return created.length ? actor.createEmbeddedDocuments('Item', created) : [];
   }
 

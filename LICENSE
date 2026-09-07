@@ -1,4 +1,31 @@
-MIT License
+MARROW is covered by two different licences. Which one applies depends on
+whether you are looking at code or at the game.
+
+================================================================================
+1. THE GAME TEXT AND CONTENT -- ALL RIGHTS RESERVED
+================================================================================
+
+Copyright (c) 2026 bhall-sre. All rights reserved.
+
+This covers MARROW.md, every rule, table, class, item, name and passage in it,
+and everything generated from it -- which is to say the entire contents of
+packs/ and lang/en.json.
+
+You may use it to play. You may not copy, redistribute, republish, adapt,
+translate, or make derivative works from it, in whole or in part, and you may
+not include it in any other product, free or paid, without prior written
+permission from the copyright holder.
+
+No licence to this material is granted by its presence in a public repository,
+by the MIT licence below, or by any Foundry VTT package listing.
+
+================================================================================
+2. THE SOFTWARE -- MIT
+================================================================================
+
+This covers the code that runs the game: everything under module/, css/,
+templates/, tools/, and system.json. It does NOT cover the content described
+above.
 
 Copyright (c) 2026 bhall-sre
 

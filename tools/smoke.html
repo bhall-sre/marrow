@@ -1,0 +1,153 @@
+<title>MARROW load smoke test</title>
+<style>
+  body { font: 13px/1.5 ui-monospace, monospace; background: #14110e; color: #e8dfc9; padding: 16px; }
+  .ok { color: #7fbf7f; } .bad { color: #ff8a8a; } .warn { color: #d9b45b; }
+  pre { white-space: pre-wrap; margin: 2px 0 10px; }
+  h2 { font-size: 14px; margin: 16px 0 4px; color: #8a6f3c; }
+</style>
+<h1>MARROW load smoke test</h1>
+<div id="out"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.8/handlebars.min.js"></script>
+<script>
+/*
+  Catches the class of failure that leaves a system silently unloaded in Foundry: an error
+  thrown while the ES module graph is imported, or inside the `init` hook. Foundry logs it to
+  the console and then carries on with its own default sheets, which is exactly what a broken
+  system looks like from the outside -- documents render, sheets do not.
+
+  The `foundry` global here is a stub: just enough shape for the imports to resolve and for
+  init to run. It proves the module LOADS. It cannot prove the sheets are correct.
+*/
+const out = document.getElementById('out');
+const log = (cls, msg) => {
+  const pre = document.createElement('pre');
+  pre.className = cls;
+  pre.textContent = msg;
+  out.appendChild(pre);
+};
+const head = (t) => { const h = document.createElement('h2'); h.textContent = t; out.appendChild(h); };
+
+// --- the stub -------------------------------------------------------------
+class StubField { constructor(o = {}) { this.options = o; } }
+const field = () => StubField;
+
+class TypeDataModel {
+  static defineSchema() { return {}; }
+  constructor() {}
+}
+
+const mixin = (Base) => class extends Base {};
+
+class ApplicationV2 {
+  static DEFAULT_OPTIONS = {};
+  constructor() {}
+  render() {}
+}
+class DocumentSheetV2 extends ApplicationV2 {}
+class ActorSheetV2 extends DocumentSheetV2 {}
+class ItemSheetV2 extends DocumentSheetV2 {}
+
+const registered = { sheets: [], settings: [], hooks: [] };
+
+globalThis.foundry = {
+  abstract: { TypeDataModel },
+  data: { fields: new Proxy({}, { get: () => StubField }) },
+  utils: { isEmpty: (o) => !o || !Object.keys(o).length, deepClone: structuredClone,
+           getProperty: () => 0, mergeObject: Object.assign },
+  applications: {
+    api: { ApplicationV2, DocumentSheetV2, HandlebarsApplicationMixin: mixin,
+           DialogV2: class { static async wait() {} static async confirm() {} } },
+    sheets: { ActorSheetV2, ItemSheetV2 },
+    handlebars: { renderTemplate: async () => '', loadTemplates: async () => ({}) },
+    ux: { TextEditor: { implementation: { enrichHTML: async (s) => s } } },
+  },
+  appv1: { sheets: { ActorSheet: class {}, ItemSheet: class {} } },
+  documents: { collections: {
+    Actors: { registerSheet: (...a) => registered.sheets.push(a[1]?.name), unregisterSheet: () => {} },
+    Items:  { registerSheet: (...a) => registered.sheets.push(a[1]?.name), unregisterSheet: () => {} },
+  } },
+};
+
+globalThis.Actor = class { static implementation = class {}; };
+globalThis.Item = class { static implementation = class {}; };
+globalThis.Roll = class { constructor() {} async evaluate() { return this; } get total() { return 1; } };
+globalThis.ChatMessage = class { static getSpeaker() { return {}; } static create() {} };
+globalThis.CONFIG = { Actor: {}, Item: {}, controlIcons: {}, MARROW: null };
+globalThis.ui = { notifications: { warn: () => {} } };
+globalThis.game = {
+  i18n: { localize: (k) => k, format: (k) => k },
+  settings: { register: (ns, key) => registered.settings.push(`${ns}.${key}`), get: () => true },
+  packs: { get: () => null },
+  user: { can: () => true },
+  system: { version: '0.0.0' },
+};
+const hooksRun = {};
+globalThis.Hooks = {
+  once: (name, fn) => { hooksRun[name] = fn; registered.hooks.push(`once:${name}`); },
+  on: (name) => registered.hooks.push(`on:${name}`),
+};
+Math.clamp ??= (n, lo, hi) => Math.min(Math.max(n, lo), hi);
+String.prototype.capitalize ??= function () { return this.charAt(0).toUpperCase() + this.slice(1); };
+
+// --- run ------------------------------------------------------------------
+(async () => {
+  head('1. Import the module graph');
+  let mod;
+  try {
+    // Cache-busted: dynamic import() caches by URL, so a fixed path would keep
+    // reporting an error that has already been fixed.
+    mod = await import(`../module/marrow.mjs?t=${Date.now()}`);
+    log('ok', 'ok - every module imported without throwing');
+  } catch (err) {
+    log('bad', `FAILED at import time\n\n${err?.stack || err}`);
+    log('warn', 'Foundry logs this to the console and then falls back to its own default\n'
+              + 'sheets. Documents still work; nothing the system defines does.');
+    return;
+  }
+
+  head('2. Run the init hook');
+  try {
+    await hooksRun.init?.();
+    log('ok', 'ok - init completed');
+  } catch (err) {
+    log('bad', `FAILED inside the init hook\n\n${err?.stack || err}`);
+    return;
+  }
+
+  head('3. What init registered');
+  log('ok', `sheets   : ${registered.sheets.filter(Boolean).join(', ') || '(none)'}`);
+  log('ok', `settings : ${registered.settings.join(', ') || '(none)'}`);
+  log('ok', `hooks    : ${registered.hooks.join(', ')}`);
+  log('ok', `data models: Actor [${Object.keys(CONFIG.Actor.dataModels || {})}] `
+          + `Item [${Object.keys(CONFIG.Item.dataModels || {})}]`);
+
+  head('4. Compile every template');
+  const templates = TEMPLATES;
+  let bad = 0;
+  for (const path of templates) {
+    try {
+      const text = await (await fetch(`../${path}?t=${Date.now()}`)).text();
+      Handlebars.precompile(text);
+    } catch (err) {
+      bad++;
+      log('bad', `${path}\n  ${err.message}`);
+    }
+  }
+  if (!bad) log('ok', `ok - all ${templates.length} templates compile`);
+})();
+</script>
+<script>
+// Written out rather than globbed, because a static page cannot list a directory.
+const TEMPLATES = [
+  'templates/actor/header.hbs', 'templates/actor/resources.hbs', 'templates/actor/numbers.hbs',
+  'templates/actor/nav.hbs', 'templates/actor/body.hbs', 'templates/actor/parts/item-row.hbs',
+  'templates/actor/companion-header.hbs', 'templates/actor/companion-numbers.hbs',
+  'templates/actor/companion-body.hbs',
+  'templates/item/header.hbs', 'templates/item/body.hbs',
+  'templates/chat/check.hbs', 'templates/chat/panic.hbs', 'templates/chat/damage.hbs',
+  'templates/chat/death.hbs', 'templates/chat/item.hbs',
+  'templates/dialog/check.hbs', 'templates/dialog/class-choice.hbs',
+  'templates/dialog/creation.hbs',
+];
+</script>

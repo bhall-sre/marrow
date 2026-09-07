@@ -10,6 +10,11 @@ Two of these exist because I shipped the bug they catch:
   * `pack_openable` -- a LevelDB directory holding only a .log reads fine from Python and
     shows up EMPTY in Foundry. A pack is only openable with CURRENT and a MANIFEST.
 
+None of this can tell you whether the JavaScript parses. A syntax error anywhere in the
+module graph leaves the system silently unloaded -- Foundry logs it and falls back to its
+own default sheets, so documents render and nothing the system defines does. Open
+tools/smoke.html through tools/serve.py to check that; it is the only thing here that does.
+
 Usage:  python tools/validate.py
 Exit code is 1 if anything failed.
 """
@@ -156,6 +161,96 @@ def check_packs():
             fail(f"pack {pack['name']}: opens, but holds no documents")
 
 
+def check_table_results():
+    """A roll table lists its result ids in `results`; the results live under their own keys.
+
+    Left as an empty array the table opens in Foundry with no rows at all -- which is what
+    it did. Nothing else notices, because the result documents are all present and correct.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import ldb  # noqa: PLC0415
+
+    for pack in ("tables", "tables_warden"):
+        directory = ROOT / "packs" / pack
+        if not directory.is_dir():
+            continue
+        try:
+            raw = ldb.read_pack(str(directory))
+        except ValueError:
+            continue
+
+        tables, results = {}, {}
+        for key, value in raw.items():
+            k = key.decode("utf-8")
+            doc = json.loads(value.decode("utf-8"))
+            if k.startswith("!tables!"):
+                tables[doc["_id"]] = doc
+            elif k.startswith("!tables.results!"):
+                results.setdefault(k.split("!")[2].split(".")[0], set()).add(doc["_id"])
+
+        for tid, doc in tables.items():
+            listed = set(doc.get("results") or [])
+            stored = results.get(tid, set())
+            if not listed and stored:
+                fail(f"table {doc['name']!r}: {len(stored)} results exist but `results` is "
+                     f"empty -- it will open with no rows")
+            elif listed != stored:
+                fail(f"table {doc['name']!r}: `results` does not match the stored results "
+                     f"({len(listed)} listed, {len(stored)} stored)")
+
+
+def check_loadout_coverage():
+    """Every V. Loadout entry should resolve to a compendium item.
+
+    Anything that does not still works -- creation makes a gear item from the text -- but a
+    miss means the packs and the tables have drifted, and the player gets an item with no
+    stats where there should have been one.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    try:
+        import check_loadouts  # noqa: PLC0415
+    except Exception as exc:  # noqa: BLE001
+        fail(f"loadout check could not run: {exc}")
+        return
+
+    try:
+        index = check_loadouts.build_index()
+    except Exception:  # noqa: BLE001
+        return                                       # packs already reported
+
+    import ldb  # noqa: PLC0415
+    directory = ROOT / "packs" / "tables"
+    if not directory.is_dir():
+        return
+    try:
+        raw = ldb.read_pack(str(directory))
+    except ValueError:
+        return
+
+    tables, results = {}, []
+    for key, value in raw.items():
+        k = key.decode("utf-8")
+        doc = json.loads(value.decode("utf-8"))
+        if k.startswith("!tables!"):
+            tables[doc["_id"]] = doc["name"]
+        elif k.startswith("!tables.results!"):
+            doc["_table"] = k.split("!")[2].split(".")[0]
+            results.append(doc)
+
+    misses = []
+    for result in results:
+        if not tables.get(result["_table"], "").startswith("Loadout:"):
+            continue
+        for part in check_loadouts.split_loadout(result.get("description", "")):
+            base = re.sub(r"\([^)]*\)", "", part).strip()
+            if not check_loadouts.lookup(index, base):
+                misses.append(part)
+
+    if misses:
+        fail(f"{len(misses)} loadout entries resolve to no compendium item: "
+             + ", ".join(sorted(set(misses))[:5]) + ("..." if len(set(misses)) > 5 else ""))
+
+
 def check_table_references():
     """Every roll table the code or a Class asks for by name must exist in a pack.
 
@@ -272,7 +367,9 @@ def main() -> int:
     check_manifest()
     check_templates()
     check_packs()
+    check_table_results()
     check_table_references()
+    check_loadout_coverage()
 
     if problems:
         print(f"{len(problems)} problem(s):\n")
