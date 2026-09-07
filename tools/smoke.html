@@ -115,7 +115,6 @@ String.prototype.capitalize ??= function () { return this.charAt(0).toUpperCase(
 Handlebars.registerHelper('localize', (k) => String(k));
 Handlebars.registerHelper('numberFormat', (n, o) => (o?.hash?.sign && n > 0 ? `+${n}` : `${n}`));
 Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
-Handlebars.registerHelper('selected', (v) => (v ? 'selected' : ''));
 
 // --- run ------------------------------------------------------------------
 (async () => {
@@ -215,6 +214,35 @@ Handlebars.registerHelper('selected', (v) => (v ? 'selected' : ''));
   } catch (err) {
     log('bad', `creation.hbs threw while rendering
   ${err.message}`);
+  }
+
+  head('7. Render the Check dialogs');
+  /*
+    check.hbs and class-choice.hbs are what every Stat, Save, Skill, and weapon attack
+    renders before rolling -- a missing helper here (like `selected`, added for the Skill
+    dropdown) throws the moment a player clicks a weapon, not at compile time, and step 5's
+    precompile does not execute the template far enough to notice.
+  */
+  const checkCtx = {
+    key: 'combat', label: 'Combat Check', base: 42,
+    rollable: [], skills: [{ id: 's1', name: 'Athletics',
+                              system: { rankLabel: 'Trained', bonus: 10 } }],
+    selectedSkill: '', innate: true,
+    given: [{ source: 'Longsword vs. Soft', effect: 'advantage', mark: '[+]' }],
+  };
+  const classChoiceCtx = {
+    classItem: { name: 'The Scholar' }, amount: 5, isPenalty: false,
+    options: [{ key: 'intellect', label: 'Intellect', value: 40 }],
+  };
+  for (const [path, ctx] of [['templates/dialog/check.hbs', checkCtx],
+                             ['templates/dialog/class-choice.hbs', classChoiceCtx]]) {
+    try {
+      const text = await (await fetch(`../${path}?t=${Date.now()}`)).text();
+      Handlebars.compile(text)(ctx);
+      log('ok', `ok - ${path} renders`);
+    } catch (err) {
+      log('bad', `${path} threw while rendering\n  ${err.message}`);
+    }
   }
 })();
 </script>

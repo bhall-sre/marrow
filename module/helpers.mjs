@@ -14,6 +14,9 @@ export function registerHelpers() {
   H.registerHelper('eq', (a, b) => a === b);
   H.registerHelper('gt', (a, b) => Number(a) > Number(b));
 
+  /** Foundry core supplies `checked` for checkboxes/radios but nothing for `<option>`. */
+  H.registerHelper('selected', (v) => (v ? 'selected' : ''));
+
   H.registerHelper('concat', (...args) => {
     args.pop();                                   // the Handlebars options object
     return new H.SafeString(args.join(''));
