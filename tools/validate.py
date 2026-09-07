@@ -117,13 +117,26 @@ def check_referenced_keys(flat):
 # --------------------------------------------------------------------------- #
 
 def check_packs():
-    """A pack Foundry can actually open needs CURRENT and a MANIFEST, not just a .log."""
+    """Three ways a pack can look fine to Python and be broken in Foundry.
+
+    1. No CURRENT/MANIFEST. LevelDB cannot open the database at all, and the compendium
+       shows up EMPTY with no error anywhere.
+    2. Bad record checksums. LevelDB with paranoid_checks off -- the default -- silently
+       DROPS records that fail crc32c, so documents vanish without a message.
+    3. An empty pack that should not be.
+
+    ldb.read_pack verifies checksums, so opening each pack here covers (2).
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import ldb  # noqa: PLC0415 -- deliberately late, after the path is set
+
     system = json.loads((ROOT / "system.json").read_text(encoding="utf-8"))
     for pack in system.get("packs", []):
         directory = ROOT / pack["path"]
         if not directory.is_dir():
             fail(f"pack {pack['name']}: {pack['path']} does not exist")
             continue
+
         names = {p.name for p in directory.iterdir()}
         if "CURRENT" not in names:
             fail(f"pack {pack['name']}: no CURRENT -- Foundry will show it EMPTY")
@@ -131,6 +144,16 @@ def check_packs():
             fail(f"pack {pack['name']}: no MANIFEST -- Foundry will show it EMPTY")
         if not any(n.endswith(".log") or n.endswith(".ldb") for n in names):
             fail(f"pack {pack['name']}: no data files")
+            continue
+
+        try:
+            docs = ldb.read_pack(str(directory))
+        except ValueError as exc:
+            fail(f"pack {pack['name']}: {exc}")
+            continue
+
+        if not docs:
+            fail(f"pack {pack['name']}: opens, but holds no documents")
 
 
 # --------------------------------------------------------------------------- #

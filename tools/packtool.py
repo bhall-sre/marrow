@@ -51,22 +51,47 @@ def load(pack_dir, in_path):
     print(f'{in_path}: wrote {len(entries)} documents -> {pack_dir}')
 
 
+# LevelDB VersionEdit tags (db/version_edit.cc).
+_TAG_COMPARATOR = 1
+_TAG_LOG_NUMBER = 2
+_TAG_NEXT_FILE = 3
+_TAG_LAST_SEQUENCE = 4
+_TAG_PREV_LOG_NUMBER = 9
+
+_COMPARATOR = b'leveldb.BytewiseComparator'
+
+
 def _ensure_control_files(pack_dir):
-    """Copy MANIFEST/CURRENT from a sibling pack if this one has none yet."""
-    if os.path.exists(os.path.join(pack_dir, 'CURRENT')):
-        return
-    parent = os.path.dirname(os.path.abspath(pack_dir))
-    for sibling in sorted(os.listdir(parent)):
-        spath = os.path.join(parent, sibling)
-        if spath == os.path.abspath(pack_dir) or not os.path.isdir(spath):
-            continue
-        if os.path.exists(os.path.join(spath, 'CURRENT')):
-            for f in CONTROL_FILES:
-                src = os.path.join(spath, f)
-                if os.path.exists(src):
-                    shutil.copy(src, pack_dir)
-            return
-    raise SystemExit(f'no sibling pack to take control files from for {pack_dir}')
+    """Write CURRENT and MANIFEST-000002 for a pack.
+
+    These are what make a pack OPENABLE. A directory holding only a .log reads perfectly
+    well from ldb.py and shows up EMPTY in Foundry, because LevelDB will not open a
+    database with no CURRENT pointing at a MANIFEST. This function generates both from
+    scratch rather than copying them from a sibling pack, so the very first pack in a fresh
+    repository works too.
+
+    The layout is taken from a real Foundry pack, decoded byte by byte:
+
+        MANIFEST record 1:  tag 1, length-prefixed "leveldb.BytewiseComparator"
+        MANIFEST record 2:  tag 2 log=3, tag 9 prev=0, tag 3 next-file=4, tag 4 last-seq=0
+
+    Both are FULL records in the ordinary WAL framing, so ldb.write_log builds them.
+    """
+    manifest = os.path.join(pack_dir, 'MANIFEST-000002')
+
+    comparator = (ldb.write_varint(_TAG_COMPARATOR)
+                  + ldb.write_varint(len(_COMPARATOR)) + _COMPARATOR)
+
+    # The log this manifest points at is 000003.log, so the next free file number is 4.
+    state = (ldb.write_varint(_TAG_LOG_NUMBER) + ldb.write_varint(3)
+             + ldb.write_varint(_TAG_PREV_LOG_NUMBER) + ldb.write_varint(0)
+             + ldb.write_varint(_TAG_NEXT_FILE) + ldb.write_varint(4)
+             + ldb.write_varint(_TAG_LAST_SEQUENCE) + ldb.write_varint(0))
+
+    ldb.write_log(manifest, [comparator, state])
+
+    with open(os.path.join(pack_dir, 'CURRENT'), 'wb') as f:
+        f.write(b'MANIFEST-000002' + bytes([0x0a]))
 
 
 def list_packs(packs_dir='packs'):

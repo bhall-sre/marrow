@@ -46,9 +46,23 @@ def write_varint(n):
     out.append(n)
     return bytes(out)
 
+def record_crc_input(rtype, chunk):
+    """LevelDB checksums the record type byte and the payload -- and not the length.
+
+    Verified against untouched vendor packs: crc32c(type + data) matches, and
+    crc32c(length + type + data) does not.
+    """
+    return bytes([rtype]) + chunk
+
 # --- WAL record layer -----------------------------------------------------
-def read_log_records(path):
-    """Yield reassembled WriteBatch payloads from a LevelDB .log file."""
+def read_log_records(path, verify=True):
+    """Yield reassembled WriteBatch payloads from a LevelDB .log file.
+
+    `verify` checks each record's crc32c. LevelDB itself does this on open and, with
+    paranoid_checks off (the default), silently DROPS any record that fails -- so a bad
+    checksum does not raise, it just loses documents. Reading without verifying will
+    therefore happily report a pack that Foundry sees as empty or truncated.
+    """
     data = open(path, 'rb').read()
     pos = 0
     pending = bytearray()
@@ -57,11 +71,14 @@ def read_log_records(path):
         if BLOCK - off < HEADER:
             pos += BLOCK - off
             continue
-        _crc, length, rtype = struct.unpack('<IHB', data[pos:pos + HEADER])
+        crc, length, rtype = struct.unpack('<IHB', data[pos:pos + HEADER])
         if rtype == 0 and length == 0:
             pos += BLOCK - off
             continue
         payload = data[pos + HEADER:pos + HEADER + length]
+        if verify and mask_crc(crc32c(record_crc_input(rtype, payload))) != crc:
+            raise ValueError(
+                f'{path}: bad crc32c at offset {pos} -- LevelDB would drop this record')
         pos += HEADER + length
         if rtype == FULL:
             yield bytes(payload)
@@ -133,8 +150,8 @@ def write_log(path, batches):
                 rtype = LAST
             else:
                 rtype = MIDDLE
-            body = struct.pack('<HB', len(chunk), rtype) + chunk
-            out += struct.pack('<I', mask_crc(crc32c(body))) + body
+            crc = mask_crc(crc32c(record_crc_input(rtype, chunk)))
+            out += struct.pack('<I', crc) + struct.pack('<HB', len(chunk), rtype) + chunk
             first = False
             if not p:
                 break
