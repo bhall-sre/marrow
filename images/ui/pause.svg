@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"
+     role="img" aria-label="Paused">
+  <!-- MARROW paused mark: a wheel broken at the hub (Crest 03). Replaces the upstream
+       orbital/solar-system animation, which was science fiction. Animation is pure SMIL +
+       CSS so it needs no image pipeline and scales cleanly. -->
+  <defs>
+    <style>
+      .rim   { fill: none; stroke: #e8dfc9; stroke-width: 3; }
+      .spoke { stroke: #e8dfc9; stroke-width: 2.5; stroke-linecap: round; }
+      .brass { stroke: #8a6f3c; }
+      .crack { fill: none; stroke: #7d1616; stroke-width: 2.5; stroke-linecap: round; }
+      .wheel { animation: marrow-turn 28s linear infinite; transform-origin: 100px 100px; }
+      .ring  { animation: marrow-turn-back 44s linear infinite; transform-origin: 100px 100px; }
+      .ember { animation: marrow-pulse 4.5s ease-in-out infinite; transform-origin: 100px 100px; }
+      @keyframes marrow-turn      { to { transform: rotate(360deg); } }
+      @keyframes marrow-turn-back { to { transform: rotate(-360deg); } }
+      @keyframes marrow-pulse     { 0%,100% { opacity: .25 } 50% { opacity: .8 } }
+      @media (prefers-reduced-motion: reduce) {
+        .wheel, .ring, .ember { animation: none; }
+      }
+    </style>
+  </defs>
+
+  <!-- outer ring, turning against the wheel -->
+  <g class="ring">
+    <circle class="rim brass" cx="100" cy="100" r="88" stroke-dasharray="10 14" opacity=".55"/>
+  </g>
+
+  <!-- the wheel itself -->
+  <g class="wheel">
+    <circle class="rim" cx="100" cy="100" r="70"/>
+    <circle class="rim brass" cx="100" cy="100" r="62" opacity=".7"/>
+
+    <!-- seven spokes; the eighth is missing, and the rim is split where it should be -->
+    <g class="spoke">
+      <line x1="100" y1="38"  x2="100" y2="76"/>
+      <line x1="144" y1="56"  x2="117" y2="83"/>
+      <line x1="162" y1="100" x2="124" y2="100"/>
+      <line x1="144" y1="144" x2="117" y2="117"/>
+      <line x1="100" y1="162" x2="100" y2="124"/>
+      <line x1="56"  y1="144" x2="83"  y2="117"/>
+      <line x1="38"  y1="100" x2="76"  y2="100"/>
+      <!-- eighth spoke (56,56 -> 83,83) deliberately absent: the wheel is broken -->
+    </g>
+
+    <!-- the break: a split in the rim where that spoke would have met it -->
+    <path class="crack" d="M 63 63 L 74 74 M 69 57 L 57 69"/>
+
+    <!-- hub, cracked through -->
+    <circle class="rim" cx="100" cy="100" r="15"/>
+    <path class="crack" d="M 92 92 L 108 108"/>
+  </g>
+
+  <!-- a slow ember at the hub -->
+  <circle class="ember" cx="100" cy="100" r="6" fill="#7d1616"/>
+</svg>

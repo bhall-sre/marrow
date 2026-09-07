@@ -1,0 +1,45 @@
+{{!--
+  XX: "Retainers are simpler than you. They have four numbers." All four, and nothing else.
+  There is no Health row here on purpose -- "They do not track Health. Any damage they take
+  is one Wound."
+--}}
+<section class="numbers companion-numbers">
+  <div class="grid">
+
+    {{#each (companionScores system) as |score|}}
+      <div class="score">
+        <button type="button" class="score-label rollable" data-action="roll" data-key="{{score.key}}">
+          {{score.label}}
+        </button>
+        <div class="score-total{{#if score.penalty}} blighted{{/if}}"
+             data-action="roll" data-key="{{score.key}}">{{score.total}}</div>
+        <div class="score-base">
+          <input type="number" name="system.{{score.key}}.value" value="{{score.value}}" />
+          {{#if score.penalty}}<span class="penalty">&minus;{{score.penalty}}</span>{{/if}}
+        </div>
+      </div>
+    {{/each}}
+
+    <div class="score wounds{{#if system.dead}} dead{{/if}}">
+      <span class="score-label">{{localize 'MARROW.Wounds'}}</span>
+      <div class="pair">
+        <input type="number" name="system.wounds.value" value="{{system.wounds.value}}" />
+        <span class="slash">/</span>
+        <input type="number" name="system.wounds.max" value="{{system.wounds.max}}" />
+      </div>
+      <div class="sub">{{localize 'MARROW.AnyDamageIsAWound'}}</div>
+    </div>
+
+  </div>
+
+  {{#if hasMotivation}}
+    {{!-- XX: "A retainer with a Motivation always fails a Loyalty Save when the two are in
+          conflict. Always." Whether they are in conflict is the Warden's call, so this warns
+          rather than overriding the roll. --}}
+    <p class="notice motivation-warning">{{localize 'MARROW.Retainer.MotivationWarning'}}</p>
+  {{/if}}
+
+  {{#if system.shorted}}
+    <p class="notice shorted-warning">{{localize 'MARROW.Retainer.ShortedWarning'}}</p>
+  {{/if}}
+</section>

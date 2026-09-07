@@ -1,0 +1,952 @@
+/* ==========================================================================
+   MARROW
+   --------------------------------------------------------------------------
+   Parchment and iron. Oxblood for anything that costs you something, verdigris
+   for the Blight, tarnished brass for the rules and fittings.
+
+   Everything below is keyed to the markup in templates/. There is no build
+   step: this file is the stylesheet, edit it directly.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap");
+
+.marrow {
+  /* ink: not pure black -- a brown-black, like oak gall on rag paper */
+  --ink: #1c1713;
+  --ink-soft: #2e2620;
+  --ink-faint: #4a3f36;
+
+  /* paper: aged, never white */
+  --parchment: #e8dfc9;
+  --parchment-dim: #d6cbb0;
+  --parchment-deep: #c2b492;
+
+  /* accents */
+  --blood: #7d1616;          /* anything that costs you: criticals, damage, warnings */
+  --blood-bright: #a52422;
+  --brass: #8a6f3c;          /* fittings, borders, rules */
+  --verdigris: #4a5d54;      /* the Blight: sickly, cold, wrong */
+
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-body: 'EB Garamond', 'Spectral', Georgia, serif;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   Window chrome
+   -------------------------------------------------------------------------- */
+
+.marrow.sheet .window-content {
+  background: var(--parchment);
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, .35), transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(120, 95, 60, .10), transparent 60%);
+  padding: 0;
+  overflow-y: auto;
+  font-size: 15px;
+}
+
+.marrow h2,
+.marrow h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border: none;
+  margin: 0;
+}
+
+.marrow h2 { font-size: .78rem; color: var(--ink-faint); }
+.marrow h3 { font-size: .82rem; }
+
+.marrow input,
+.marrow select,
+.marrow textarea {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: rgba(255, 255, 255, .28);
+  border: 1px solid var(--parchment-deep);
+  border-radius: 2px;
+}
+
+.marrow input:focus,
+.marrow select:focus {
+  outline: none;
+  border-color: var(--brass);
+  box-shadow: 0 0 0 2px rgba(138, 111, 60, .22);
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+
+.marrow .marrow-header {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--ink);
+  color: var(--parchment);
+  border-bottom: 3px solid var(--brass);
+}
+
+.marrow .marrow-header .portrait {
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  object-fit: cover;
+  border: 2px solid var(--brass);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.marrow .marrow-header .identity {
+  flex: 1 1 auto;
+  min-width: 0;                       /* so a long name cannot widen the header */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.marrow .marrow-header .name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--parchment);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(232, 223, 201, .28);
+  padding: 0 0 3px;
+  width: 100%;
+}
+
+.marrow .marrow-header .name:focus {
+  border-bottom-color: var(--brass);
+  box-shadow: none;
+}
+
+.marrow .identity-fields {
+  display: grid;
+  /* minmax(0, 1fr) rather than 1fr: a 1fr column has an auto (min-content)
+     minimum, and a long word in a display face will otherwise push its column
+     wider than its share and blow the grid out. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 12px;
+}
+
+.marrow .identity-fields .field,
+.marrow .field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.marrow .identity-fields .field > span {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+.marrow .identity-fields input {
+  background: rgba(232, 223, 201, .07);
+  border: 1px solid rgba(138, 111, 60, .5);
+  color: var(--parchment);
+  padding: 2px 5px;
+  font-size: .92rem;
+  min-width: 0;
+}
+
+.marrow .marrow-header .type-line {
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+/* --------------------------------------------------------------------------
+   Resources -- Health, Wounds, Stress, Blight, Armor
+   -------------------------------------------------------------------------- */
+
+.marrow .resources {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--parchment-deep);
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .resource {
+  background: var(--parchment);
+  padding: 8px 6px 6px;
+  text-align: center;
+  min-width: 0;
+}
+
+.marrow .resource-label {
+  display: block;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 4px;
+}
+
+.marrow button.resource-label { cursor: pointer; }
+.marrow button.resource-label:hover { color: var(--blood); }
+
+.marrow .resource .pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+}
+
+.marrow .resource input,
+.marrow .resource .derived {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+  width: 2.6em;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .resource .derived {
+  border-bottom-color: transparent;
+  color: var(--ink-faint);
+}
+
+.marrow .resource .slash { color: var(--parchment-deep); font-size: 1.1rem; }
+
+.marrow .resource .sub {
+  margin-top: 3px;
+  font-size: .62rem;
+  letter-spacing: .05em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.marrow .resource .blight-note { color: var(--verdigris); font-weight: 600; }
+.marrow .resource.armor .kind { font-weight: 600; color: var(--ink); }
+
+/* XVI.1's four bands. The colour is the warning; the word is underneath it. */
+.marrow .resource.blight .band-name { font-weight: 600; letter-spacing: .1em; }
+.marrow .resource.blight.band-touched  { background: rgba(74, 93, 84, .10); }
+.marrow .resource.blight.band-steeped  { background: rgba(74, 93, 84, .22); }
+.marrow .resource.blight.band-consumed { background: rgba(74, 93, 84, .38); }
+.marrow .resource.blight.band-undone   { background: var(--verdigris); }
+
+.marrow .resource.blight.band-touched .band-name,
+.marrow .resource.blight.band-steeped .band-name { color: var(--verdigris); }
+.marrow .resource.blight.band-consumed .band-name { color: #2f3d37; }
+.marrow .resource.blight.band-undone .resource-label,
+.marrow .resource.blight.band-undone .sub,
+.marrow .resource.blight.band-undone .band-name,
+.marrow .resource.blight.band-undone input,
+.marrow .resource.blight.band-undone .derived { color: var(--parchment); }
+
+/* XIII.1 -- cumulative, ignores armour, has killed more people than every monster. */
+.marrow .bleeding-banner {
+  background: var(--blood);
+  color: var(--parchment);
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   The numbers you roll under
+   -------------------------------------------------------------------------- */
+
+.marrow .numbers {
+  display: grid;
+  grid-template-columns: 4fr 3fr;
+  gap: 0 18px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .companion-numbers { grid-template-columns: minmax(0, 1fr); }
+
+.marrow .numbers .group h2 {
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .numbers .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.marrow .companion-numbers .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.marrow .score { text-align: center; min-width: 0; }
+
+.marrow .score-label {
+  display: block;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  /* Stat names are not the same length; let the long ones wrap rather than
+     widen their column. */
+  overflow-wrap: anywhere;
+}
+
+.marrow .score-label:hover { color: var(--blood); }
+
+.marrow .score-total {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  cursor: pointer;
+  border-bottom: 2px solid var(--ink);
+}
+
+.marrow .score-total:hover { color: var(--blood); border-bottom-color: var(--blood); }
+
+/* XVI.1: when the Blight is taking a cut, the number you roll under is not the
+   number you wrote down, and the sheet should not hide the difference. */
+.marrow .score-total.blighted { color: var(--verdigris); border-bottom-color: var(--verdigris); }
+
+.marrow .score-base {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.marrow .score-base input {
+  width: 2.4em;
+  text-align: center;
+  font-size: .78rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--ink-faint);
+}
+
+.marrow .score-base .penalty {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--verdigris);
+}
+
+.marrow .score.wounds .pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+}
+
+.marrow .score.wounds input {
+  width: 2.2em;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .score.wounds .sub {
+  margin-top: 2px;
+  font-size: .58rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.marrow .score.wounds.dead .score-label,
+.marrow .score.wounds.dead input { color: var(--blood); }
+
+.marrow .quick-rolls {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.marrow .quick-rolls button {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  border-radius: 2px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.marrow .quick-rolls button:hover { background: var(--blood); }
+.marrow .quick-rolls .hint {
+  display: block;
+  font-size: .58rem;
+  letter-spacing: .06em;
+  text-transform: none;
+  color: var(--brass);
+}
+
+/* --------------------------------------------------------------------------
+   Tabs
+   -------------------------------------------------------------------------- */
+
+.marrow .sheet-tabs {
+  display: flex;
+  background: var(--ink);
+  border-bottom: 2px solid var(--brass);
+}
+
+.marrow .tab-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  /* Inactive tabs sit ON the ink bar, so they must be parchment, not ink. */
+  color: var(--parchment-deep);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: 7px 4px;
+  cursor: pointer;
+}
+
+.marrow .tab-button:hover { color: var(--parchment); }
+.marrow .tab-button.active {
+  color: var(--parchment);
+  border-bottom-color: var(--blood-bright);
+}
+
+.marrow .tab-button i { font-size: .8em; opacity: .8; }
+
+/* --------------------------------------------------------------------------
+   Body and item lists
+   -------------------------------------------------------------------------- */
+
+.marrow .sheet-body { padding: 12px 16px 20px; }
+
+.marrow .section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 14px 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .section-head:first-child { margin-top: 0; }
+
+.marrow .section-head button {
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: auto;
+}
+
+.marrow .section-head button:hover { color: var(--blood); }
+
+.marrow .item-list { list-style: none; margin: 0; padding: 0; }
+
+.marrow .item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  border-bottom: 1px solid rgba(194, 180, 146, .45);
+}
+
+.marrow .item-row:hover { background: rgba(194, 180, 146, .22); }
+
+.marrow .item-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  object-fit: cover;
+  border: 1px solid var(--parchment-deep);
+  border-radius: 2px;
+}
+
+.marrow .item-name {
+  /* flex-basis 0 with grow: the name takes the leftover width and nothing more,
+     so a long name never squeezes the detail column out of the row. Foundry's
+     own `.flexrow > * { flex: 1 }` is not in play here -- these rows are not
+     flexrow -- so the sizing is stated outright. */
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: left;
+  font-size: .95rem;
+  color: var(--ink);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marrow .item-name:hover { color: var(--blood); }
+
+.marrow .item-detail {
+  flex: 0 0 auto;
+  font-size: .74rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.marrow .item-controls { flex: 0 0 auto; display: flex; gap: 2px; }
+
+.marrow .item-controls button {
+  width: 20px;
+  height: 20px;
+  font-size: .7rem;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: .55;
+}
+
+.marrow .item-row:hover .item-controls button { opacity: 1; }
+.marrow .item-controls button:hover { color: var(--blood); }
+.marrow .item-controls .equip.on { color: var(--brass); opacity: 1; }
+
+.marrow .item-list .empty {
+  padding: 5px 2px;
+  font-style: italic;
+  color: var(--ink-faint);
+  font-size: .85rem;
+}
+
+.marrow .notice {
+  margin: 8px 0;
+  padding: 6px 9px;
+  font-size: .82rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  background: rgba(138, 111, 60, .12);
+  border-left: 3px solid var(--brass);
+}
+
+.marrow .notice.motivation-warning,
+.marrow .notice.shorted-warning {
+  background: rgba(125, 22, 22, .09);
+  border-left-color: var(--blood);
+}
+
+.marrow .ladder-note {
+  margin-top: 12px;
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Item sheets and forms
+   -------------------------------------------------------------------------- */
+
+.marrow .fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.marrow .field.wide { grid-column: 1 / -1; }
+
+.marrow .field > span {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.marrow .field input,
+.marrow .field select { padding: 2px 5px; min-width: 0; }
+
+.marrow .field .pair { display: flex; align-items: center; gap: 4px; }
+.marrow .field .pair input { width: 3.2em; text-align: center; }
+
+.marrow label.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.marrow label.stacked > span {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.marrow .tags,
+.marrow .checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 10px;
+}
+
+.marrow label.check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.marrow label.check input { width: auto; }
+
+.marrow .money-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+/* VIII.1, on a weapon's own sheet. */
+.marrow .matchup {
+  display: flex;
+  gap: 14px;
+  margin: 0 0 10px;
+  font-size: .82rem;
+}
+
+.marrow .matchup .beats { color: var(--brass); font-weight: 600; }
+.marrow .matchup .loses { color: var(--blood); font-weight: 600; }
+.marrow .matchup.none { font-style: italic; color: var(--ink-faint); }
+
+.marrow .prereqs { font-size: .84rem; margin: 0 0 10px; }
+.marrow .prereq-label {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-right: 6px;
+}
+
+.marrow .choice-note { font-size: .84rem; margin: 4px 0; }
+
+.marrow .scaled { font-size: .9rem; margin: 4px 0 10px; }
+.marrow .formula {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--verdigris);
+}
+
+.marrow .class-tables { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.marrow .class-tables h3 { flex: 1 0 100%; }
+.marrow .class-tables button {
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  border-radius: 2px;
+  padding: 4px 10px;
+  cursor: pointer;
+  width: auto;
+}
+
+.marrow .class-tables button:hover { background: var(--blood); }
+
+.marrow prose-mirror { min-height: 120px; display: block; margin-bottom: 12px; }
+
+/* --------------------------------------------------------------------------
+   Dialogs
+   -------------------------------------------------------------------------- */
+
+.marrow.dialog .window-content { background: var(--parchment); color: var(--ink); }
+
+.marrow .target-preview {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow .target-preview .label {
+  font-family: var(--font-display);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.marrow .target-preview .value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.marrow fieldset.situational {
+  border: 1px solid var(--parchment-deep);
+  border-radius: 2px;
+  padding: 6px 10px 8px;
+  margin: 0 0 10px;
+}
+
+.marrow fieldset.situational legend {
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 4px;
+}
+
+.marrow fieldset.situational label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .86rem;
+}
+
+.marrow .innate-note {
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--blood);
+  margin: 0;
+}
+
+.marrow .class-choice-form .choices { display: flex; flex-direction: column; gap: 3px; }
+
+.marrow .class-choice-form .choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.marrow .class-choice-form .choice:hover {
+  border-color: var(--parchment-deep);
+  background: rgba(194, 180, 146, .25);
+}
+
+.marrow .class-choice-form .stat-name { flex: 1; font-size: .95rem; }
+.marrow .class-choice-form .stat-value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+.marrow .class-choice-form.penalty .prompt strong { color: var(--blood); }
+
+/* --------------------------------------------------------------------------
+   Chat cards
+   -------------------------------------------------------------------------- */
+
+.marrow.chat-card {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--parchment);
+  border: 1px solid var(--parchment-deep);
+  border-left: 4px solid var(--ink-faint);
+  border-radius: 2px;
+  padding: 8px 10px;
+}
+
+.marrow.chat-card .card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--parchment-deep);
+}
+
+.marrow.chat-card .card-head img { width: 24px; height: 24px; border: none; }
+
+.marrow.chat-card .what {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.marrow.chat-card .skill,
+.marrow.chat-card .damage-type {
+  font-size: .7rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.marrow.chat-card .roll-line {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.marrow.chat-card .total {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.marrow.chat-card .vs {
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.marrow.chat-card .target {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ink-faint);
+}
+
+.marrow.chat-card .sources {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: .78rem;
+}
+
+.marrow.chat-card .sources li { display: flex; gap: 5px; }
+.marrow.chat-card .sources .mark { font-weight: 700; }
+.marrow.chat-card .sources .advantage .mark { color: var(--brass); }
+.marrow.chat-card .sources .disadvantage .mark { color: var(--blood); }
+.marrow.chat-card .sources .cancelled { font-style: italic; color: var(--ink-faint); }
+
+.marrow.chat-card .verdict {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.marrow.chat-card .consequences {
+  list-style: none;
+  margin: 5px 0 0;
+  padding: 0;
+  font-size: .8rem;
+  color: var(--ink-soft);
+}
+
+.marrow.chat-card .working-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--parchment-deep);
+  font-size: .86rem;
+}
+
+/* X.4 -- a critical, either way, is the loudest thing on the card. */
+.marrow.chat-card.outcome-criticalSuccess { border-left-color: var(--brass); }
+.marrow.chat-card.outcome-criticalSuccess .verdict { color: var(--brass); }
+.marrow.chat-card.outcome-success { border-left-color: var(--ink); }
+.marrow.chat-card.outcome-failure { border-left-color: var(--blood); }
+.marrow.chat-card.outcome-failure .verdict { color: var(--blood); }
+.marrow.chat-card.outcome-criticalFailure { border-left-color: var(--blood-bright); }
+.marrow.chat-card.outcome-criticalFailure .verdict { color: var(--blood-bright); }
+.marrow.chat-card.outcome-criticalFailure .total { color: var(--blood-bright); }
+
+.marrow.chat-card.panic.broke { border-left-color: var(--blood-bright); }
+.marrow.chat-card.panic.broke .verdict { color: var(--blood-bright); }
+
+.marrow.chat-card.death { border-left-color: var(--ink); background: var(--parchment-dim); }
+.marrow.chat-card.death-pending {
+  font-style: italic;
+  color: var(--ink-soft);
+  background: var(--parchment-dim);
+  border-left: 4px solid var(--ink);
+  padding: 8px 10px;
+}
+
+.marrow.chat-card.damage .tag.aa {
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .08em;
+  color: var(--parchment);
+  background: var(--blood);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+
+.marrow.chat-card .target-line { margin-top: 4px; font-size: .82rem; color: var(--ink-faint); }
+
+.marrow.chat-card .card-buttons { display: flex; gap: 5px; margin-top: 8px; }
+
+.marrow.chat-card .card-buttons button {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  border-radius: 2px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.marrow.chat-card .card-buttons button:hover { background: var(--blood); }
+
+.marrow.chat-card .description { font-size: .88rem; }
+.marrow.chat-card .description p:first-child { margin-top: 0; }

@@ -1,0 +1,295 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Character",
+      "companion": "Retainer"
+    },
+    "Item": {
+      "skill": "Skill",
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "gear": "Gear",
+      "class": "Class",
+      "working": "Working",
+      "condition": "Condition"
+    }
+  },
+
+  "MARROW": {
+    "Sheet": {
+      "Character": "MARROW Character",
+      "Companion": "MARROW Retainer",
+      "Item": "MARROW Item"
+    },
+
+    "Unnamed": "Unnamed",
+    "ClassLabel": "Class",
+    "DropAClass": "Drag a Class here",
+    "Pronouns": "Pronouns",
+    "Silver": "Silver",
+    "Tally": "Tally",
+    "TallyHint": "The jobs you have walked away from. It does nothing at all.",
+    "Occupation": "Occupation",
+    "Wage": "Wage",
+
+    "Health": "Health",
+    "Wounds": "Wounds",
+    "StressLabel": "Stress",
+    "Armor": "Armor",
+    "Bleeding": "Bleeding",
+    "Damage": "Damage",
+    "DamageType": "Wound Type",
+    "Range": "Range",
+    "Cost": "Cost",
+    "Ammo": "Ammo",
+    "Quantity": "Quantity",
+    "CategoryLabel": "Category",
+    "Rank": "Rank",
+    "Prerequisites": "Requires",
+    "Or": "or",
+    "ArmorPoints": "Armor Points",
+    "DamageReduction": "Damage Reduction",
+    "ArmorKind": "Kind",
+    "FromAP": "From Armor Points",
+    "Shield": "Shield",
+    "Warded": "Warded",
+    "Heavy": "Heavy",
+    "Destroyed": "Destroyed",
+    "PermanentUntilTreated": "Permanent until treated",
+    "Description": "Description",
+    "Biography": "Biography",
+    "Notes": "Notes",
+    "Adjustments": "Adjustments",
+    "TraumaResponse": "Trauma Response",
+
+    "CurrentMax": "Current / Maximum",
+    "CurrentMin": "Current / Minimum",
+    "TakenMax": "Taken / Maximum",
+    "APDR": "AP · DR",
+    "AnyDamageIsAWound": "Any damage taken is one Wound",
+
+    "Stats": "Stats",
+    "Saves": "Saves",
+    "Numbers": "Numbers",
+    "Save": {
+      "Sanity": "Sanity",
+      "Fear": "Fear",
+      "Body": "Body"
+    },
+
+    "Add": "Add",
+    "Edit": "Edit",
+    "DeleteLabel": "Delete",
+    "Equip": "Equip",
+    "Apply": "Apply",
+    "New": "New {type}",
+    "Under": "under",
+    "Over": "over",
+    "Against": "against",
+    "Advantage": "Advantage",
+    "Disadvantage": "Disadvantage",
+    "Neither": "Neither",
+    "Cancelled": "They cancel each other out",
+    "SelectATarget": "Select the token this damage lands on.",
+    "ApplyDirect": "Apply, ignoring armor",
+    "ApplyDirectHint": "For Bleeding and for attacks that bypass armor and Damage Reduction entirely.",
+
+    "APHint": "You ignore all damage less than your Armor Points. A hit that meets or beats them destroys the armor and the remainder goes into you.",
+    "DRHint": "Damage Reduction always subtracts first, and keeps working after the armor is gone.",
+    "AAHint": "Anti-Armor: ignores and destroys armor on any hit.",
+    "KindHint": "Left blank, the kind is read from the Armor Points: Soft 0–4, Mail 5–7, Plate 8–10.",
+    "WardedHint": "Removes the Disadvantage on Blight Saves. It does not remove the Save.",
+    "DestroyedHint": "Destroyed armor contributes no Armor Points, but its Damage Reduction keeps working.",
+    "BleedingHint": "Damage per round, cumulative, ignoring armor and Damage Reduction.",
+    "RestHint": "Rest: a Save on your worst Save. On a success, shed the ones digit of the roll.",
+    "MinStressHint": "Your Minimum Stress, including anything the Blight is adding.",
+
+    "Empty": {
+      "Skills": "No Skills. Remember what you do not know.",
+      "Weapons": "Unarmed.",
+      "Armor": "Nothing between you and it.",
+      "Workings": "No Workings recorded."
+    },
+
+    "Tab": {
+      "Skills": "Skills",
+      "Arms": "Arms",
+      "Gear": "Gear",
+      "Workings": "Workings",
+      "Notes": "Notes",
+      "Class": "Class",
+      "Conditions": "Conditions",
+      "Weapons": "Weapons",
+      "Armor": "Armor & Shields",
+      "Hire": "Terms",
+      "Kit": "Kit"
+    },
+
+    "Category": {
+      "Gear": "Gear",
+      "Treatment": "Treatments",
+      "Trinket": "Trinkets",
+      "Crest": "Crests"
+    },
+
+    "Tag": {
+      "AntiArmor": "Anti-Armor",
+      "AntiArmorHint": "Ignores and destroys armor on any hit.",
+      "Reload": "Reload",
+      "ReloadHint": "Reloading is your action for the round.",
+      "Heavy": "Heavy",
+      "HeavyHint": "Braced or set before use.",
+      "Reach": "Reach",
+      "ReachHint": "Strikes at one range band further than its length suggests.",
+      "TwoHanded": "Two-Handed",
+      "TwoHandedHint": "No shield, no free hand."
+    },
+
+    "Adjust": {
+      "strength": "Strength",
+      "speed": "Speed",
+      "intellect": "Intellect",
+      "combat": "Combat",
+      "sanity": "Sanity Save",
+      "fear": "Fear Save",
+      "body": "Body Save",
+      "maxWounds": "Maximum Wounds"
+    },
+
+    "Matchup": {
+      "Ignores": "Ignores the armor matchup entirely."
+    },
+
+    "Roll": {
+      "Rest": "Rest",
+      "Panic": "Panic Check",
+      "PanicHint": "1d20 over Stress",
+      "AttackWith": "Attack — {weapon}",
+      "Loadout": "Roll Loadout",
+      "Trinket": "Roll Trinket",
+      "Crest": "Roll Crest"
+    },
+
+    "Outcome": {
+      "criticalSuccess": "Critical Success",
+      "success": "Success",
+      "failure": "Failure",
+      "criticalFailure": "Critical Failure"
+    },
+
+    "Reason": {
+      "Situational": "The situation",
+      "Consumed": "Consumed: [-] on all Body Saves",
+      "Shorted": "Wages shorted"
+    },
+
+    "Consequence": {
+      "FailStress": "Gain 1 Stress.",
+      "CriticalPanic": "Critical Failure — make a Panic Check.",
+      "RestRelief": "Shed {n} Stress.",
+      "StressOverflow": "Stress is at its maximum. {n} over — reduce the most relevant Stat or Save by that amount."
+    },
+
+    "Panic": {
+      "Held": "Held.",
+      "Broke": "Consult the Panic Table."
+    },
+
+    "Death": {
+      "Save": "Death Save",
+      "FaceDown": "{name}'s Death Save is face down on the table. It is revealed only when somebody spends a turn checking the body."
+    },
+
+    "Blight": {
+      "Label": "Blight",
+      "Gain": "Blight gained",
+      "Exposure": "Blighted ground",
+      "ExposureHint": "Body Save at Disadvantage. On a failure, gain 1 Blight.",
+      "Warded": "Warded gear",
+      "GroundSave": "{ground} Ground",
+      "Dawn": "Steeped: the dawn Save",
+      "Band": {
+        "clean": "Clean",
+        "touched": "Touched",
+        "steeped": "Steeped",
+        "consumed": "Consumed",
+        "undone": "Undone"
+      },
+      "Note": {
+        "clean": "No Blight. Most people begin here and never leave.",
+        "touched": "The marks begin. You start noticing that you understand things nobody taught you.",
+        "steeped": "Minimum Stress +1. Each dawn, make a Body Save or take 1d10 damage. Strangers cross the road.",
+        "consumed": "Minimum Stress +1 again. [-] on all Body Saves. Rest no longer restores your Health. You are past mending.",
+        "undone": "You die in 1d5 days. Nothing prevents it and nothing delays it. Spend the days well."
+      }
+    },
+
+    "Working": {
+      "Attempt": "Working — {name}",
+      "NeedsBlight": "A Working needs a Blight Level of 1 or higher.",
+      "Formula": "Formula",
+      "FormulaHint": "Use {B} for the caster's Blight Level, e.g. {B}d10",
+      "AtBlight": "At Blight",
+      "LadderNote": "The Working always happens. The Sanity Save decides only what it takes out of you.",
+      "Outcome": {
+        "criticalSuccess": "It works. It costs you nothing.",
+        "success": "It works. Gain 1 Stress.",
+        "failure": "It works. Gain 1 Stress and 1 Blight.",
+        "criticalFailure": "It works, and something comes through alongside it."
+      }
+    },
+
+    "Retainer": {
+      "Motivation": "Motivation",
+      "MotivationHint": "Only the memorable ones need one.",
+      "MotivationWarning": "This retainer has a Motivation. They always fail a Loyalty Save when the two are in conflict. Always.",
+      "Shorted": "Wages shorted",
+      "ShortedHint": "Short them or stiff them and every future Loyalty Save is at [-].",
+      "ShortedWarning": "Wages shorted: every Loyalty Save is at [-].",
+      "DangerMoney": "Danger money",
+      "DangerMoneyHint": "An extra month's wage, sometimes two, before they walk into that ground. Negotiate it at the fire.",
+      "DeathPrice": "Death-price",
+      "DeathPriceHint": "Usually a year's wage, named before setting out. Pay it. Word travels faster than you do.",
+      "Beneficiary": "Beneficiary",
+      "Guilded": "Guilded"
+    },
+
+    "Class": {
+      "ChoiceNote": "This class lets you place one adjustment yourself:",
+      "StartingBlight": "Begins play at Blight",
+      "Tables": "Starting rolls",
+      "MissingSkill": "This class grants the Skill \"{name}\", which is not in the Skills compendium."
+    },
+
+    "Table": {
+      "Missing": "No roll table named \"{name}\" was found in the world or in MARROW's compendiums."
+    },
+
+    "Dialog": {
+      "Check": "Check",
+      "CheckTitle": "{name}",
+      "ClassTitle": "{name}",
+      "Roll": "Roll",
+      "Apply": "Apply",
+      "Cancel": "Cancel",
+      "Skill": "Skill",
+      "NoSkill": "None",
+      "WhichCheck": "Applied to",
+      "Situational": "The situation",
+      "InnateDisadvantage": "This Check already carries a Disadvantage you cannot set aside.",
+      "ChooseBonus": "Place this class's bonus:",
+      "ChoosePenalty": "Place this class's penalty:",
+      "DeleteTitle": "Delete {name}?",
+      "DeleteBody": "Delete {name}? This cannot be undone."
+    },
+
+    "Settings": {
+      "AutoBleed": "Bleed automatically",
+      "AutoBleedHint": "At the start of a bleeding character's turn, apply their Bleeding damage without being asked.",
+      "AutoPanic": "Panic on a Critical Failure",
+      "AutoPanicHint": "Roll the Panic Check automatically whenever a Check comes up a Critical Failure.",
+      "AutoStress": "Stress on a failure",
+      "AutoStressHint": "Add the 1 Stress a failed Stat Check or Save costs, without being asked."
+    }
+  }
+}

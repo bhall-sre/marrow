@@ -1,0 +1,52 @@
+{{!--
+  X.3 and X.5 -- the only two questions MARROW asks before a roll. There is no modifier
+  field here on purpose: a bonus in this game is either a Skill or it is Advantage.
+--}}
+<form class="marrow check-dialog-form">
+
+  {{#if key}}
+    <div class="target-preview">
+      <span class="label">{{label}}</span>
+      <span class="value">{{base}}</span>
+    </div>
+  {{else}}
+    <label class="stacked">
+      <span>{{localize 'MARROW.Dialog.WhichCheck'}}</span>
+      <select name="key" required>
+        <option value="">&mdash;</option>
+        {{#each rollable as |group|}}
+          <optgroup label="{{group.label}}">
+            {{#each group.options as |opt|}}
+              <option value="{{opt.key}}">{{opt.label}} &mdash; {{opt.total}}</option>
+            {{/each}}
+          </optgroup>
+        {{/each}}
+      </select>
+    </label>
+  {{/if}}
+
+  <label class="stacked">
+    <span>{{localize 'MARROW.Dialog.Skill'}}</span>
+    <select name="skill">
+      <option value="">{{localize 'MARROW.Dialog.NoSkill'}}</option>
+      {{#each skills as |skill|}}
+        <option value="{{skill.id}}" {{selected (eq skill.id ../selectedSkill)}}>
+          {{skill.name}} ({{skill.system.rankLabel}} +{{skill.system.bonus}})
+        </option>
+      {{/each}}
+    </select>
+  </label>
+
+  <fieldset class="situational">
+    <legend>{{localize 'MARROW.Dialog.Situational'}}</legend>
+    <label><input type="radio" name="situational" value="advantage" /> [+] {{localize 'MARROW.Advantage'}}</label>
+    <label><input type="radio" name="situational" value="" checked /> {{localize 'MARROW.Neither'}}</label>
+    <label><input type="radio" name="situational" value="disadvantage" /> [-] {{localize 'MARROW.Disadvantage'}}</label>
+  </fieldset>
+
+  {{#if innate}}
+    {{!-- XVI.1 / XX: not the player's to switch off, so it is stated rather than offered. --}}
+    <p class="innate-note">{{localize 'MARROW.Dialog.InnateDisadvantage'}}</p>
+  {{/if}}
+
+</form>

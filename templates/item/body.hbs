@@ -1,0 +1,214 @@
+<section class="sheet-body item-body">
+
+{{#if is.skill}}
+  {{!-- III. --}}
+  <div class="fields">
+    <label class="field">
+      <span>{{localize 'MARROW.Rank'}}</span>
+      <select name="system.rank">
+        {{#each MARROW.skillRanks as |rank key|}}
+          <option value="{{key}}" {{selected (eq key ../system.rank)}}>{{rank.label}} +{{rank.bonus}}</option>
+        {{/each}}
+      </select>
+    </label>
+  </div>
+  {{#if system.prerequisites.length}}
+    {{!-- III: any one of these satisfies it, so they are listed as alternatives. --}}
+    <p class="prereqs">
+      <span class="prereq-label">{{localize 'MARROW.Prerequisites'}}</span>
+      {{join system.prerequisites (localize 'MARROW.Or')}}
+    </p>
+  {{/if}}
+{{/if}}
+
+{{#if is.weapon}}
+  {{!-- VIII.2. --}}
+  <div class="fields">
+    <label class="field">
+      <span>{{localize 'MARROW.Damage'}}</span>
+      <input type="text" name="system.damage" value="{{system.damage}}" />
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.DamageType'}}</span>
+      <select name="system.damageType">
+        {{#each MARROW.damageTypes as |type key|}}
+          <option value="{{key}}" {{selected (eq key ../system.damageType)}}>{{type.label}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.Range'}}</span>
+      <select name="system.range">
+        {{#each MARROW.ranges as |label key|}}
+          <option value="{{key}}" {{selected (eq key ../system.range)}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.Cost'}}</span>
+      <input type="number" name="system.cost" value="{{system.cost}}" />
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.Ammo'}}</span>
+      <span class="pair">
+        <input type="number" name="system.ammo.value" value="{{system.ammo.value}}" />
+        <span class="slash">/</span>
+        <input type="number" name="system.ammo.max" value="{{system.ammo.max}}" />
+      </span>
+    </label>
+  </div>
+
+  {{#if matchup}}
+    {{!-- VIII.1, shown here so the player never has to hold the triangle in their head. --}}
+    <p class="matchup">
+      <span class="beats">[+] {{matchup.beats}}</span>
+      <span class="loses">[-] {{matchup.losesTo}}</span>
+    </p>
+  {{else}}
+    <p class="matchup none">{{localize 'MARROW.Matchup.Ignores'}}</p>
+  {{/if}}
+
+  <div class="tags">
+    {{#each (weaponTags system) as |tag|}}
+      <label class="check" data-tooltip="{{localize tag.hint}}">
+        <input type="checkbox" name="system.{{tag.key}}" {{checked tag.on}} />
+        <span>{{localize tag.label}}</span>
+      </label>
+    {{/each}}
+  </div>
+{{/if}}
+
+{{#if is.armor}}
+  {{!-- VIII.3, VIII.4, XII.5. --}}
+  <div class="fields">
+    <label class="field" data-tooltip="{{localize 'MARROW.APHint'}}">
+      <span>{{localize 'MARROW.ArmorPoints'}}</span>
+      <input type="number" name="system.armorPoints" value="{{system.armorPoints}}" />
+    </label>
+    <label class="field" data-tooltip="{{localize 'MARROW.DRHint'}}">
+      <span>{{localize 'MARROW.DamageReduction'}}</span>
+      <input type="number" name="system.damageReduction" value="{{system.damageReduction}}" />
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.Cost'}}</span>
+      <input type="number" name="system.cost" value="{{system.cost}}" />
+    </label>
+    <label class="field" data-tooltip="{{localize 'MARROW.KindHint'}}">
+      <span>{{localize 'MARROW.ArmorKind'}}</span>
+      <select name="system.kind">
+        <option value="" {{selected (eq system.kind '')}}>{{localize 'MARROW.FromAP'}}</option>
+        {{#each MARROW.armorKinds as |kind key|}}
+          <option value="{{key}}" {{selected (eq key ../system.kind)}}>{{kind.label}} ({{kind.min}}&ndash;{{kind.max}})</option>
+        {{/each}}
+      </select>
+    </label>
+  </div>
+  <div class="tags">
+    <label class="check"><input type="checkbox" name="system.isShield" {{checked system.isShield}} />
+      <span>{{localize 'MARROW.Shield'}}</span></label>
+    <label class="check" data-tooltip="{{localize 'MARROW.WardedHint'}}">
+      <input type="checkbox" name="system.warded" {{checked system.warded}} />
+      <span>{{localize 'MARROW.Warded'}}</span></label>
+    <label class="check"><input type="checkbox" name="system.heavy" {{checked system.heavy}} />
+      <span>{{localize 'MARROW.Heavy'}}</span></label>
+    <label class="check" data-tooltip="{{localize 'MARROW.DestroyedHint'}}">
+      <input type="checkbox" name="system.destroyed" {{checked system.destroyed}} />
+      <span>{{localize 'MARROW.Destroyed'}}</span></label>
+  </div>
+{{/if}}
+
+{{#if is.gear}}
+  <div class="fields">
+    <label class="field">
+      <span>{{localize 'MARROW.Quantity'}}</span>
+      <input type="number" name="system.quantity" value="{{system.quantity}}" />
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.Cost'}}</span>
+      <input type="number" name="system.cost" value="{{system.cost}}" />
+    </label>
+    <label class="field">
+      <span>{{localize 'MARROW.CategoryLabel'}}</span>
+      <select name="system.category">
+        {{#each MARROW.gearCategories as |label key|}}
+          <option value="{{key}}" {{selected (eq key ../system.category)}}>{{localize label}}</option>
+        {{/each}}
+      </select>
+    </label>
+  </div>
+{{/if}}
+
+{{#if is.class}}
+  {{!-- II. --}}
+  <div class="class-adjustments">
+    <h3>{{localize 'MARROW.Adjustments'}}</h3>
+    <div class="fields">
+      {{#each system.adjustments as |value key|}}
+        <label class="field">
+          <span>{{localize (concat 'MARROW.Adjust.' key)}}</span>
+          <input type="number" name="system.adjustments.{{key}}" value="{{value}}" />
+        </label>
+      {{/each}}
+    </div>
+    {{#if system.choice.amount}}
+      <p class="choice-note">{{localize 'MARROW.Class.ChoiceNote'}}
+        <strong>{{numberFormat system.choice.amount sign=true}}</strong></p>
+    {{/if}}
+    {{#if system.startingBlight}}
+      <p class="choice-note">{{localize 'MARROW.Class.StartingBlight'}}
+        <strong>{{system.startingBlight}}</strong></p>
+    {{/if}}
+  </div>
+
+  <h3>{{localize 'MARROW.TraumaResponse'}}</h3>
+  <prose-mirror name="system.traumaResponse" value="{{system.traumaResponse}}"
+                toggled="true" data-enriched="{{enrichedTrauma}}"></prose-mirror>
+
+  {{#if system.tables.loadout}}
+    <div class="class-tables">
+      <h3>{{localize 'MARROW.Class.Tables'}}</h3>
+      <button type="button" data-action="rollTable" data-table="{{system.tables.loadout}}">
+        {{localize 'MARROW.Roll.Loadout'}}</button>
+      <button type="button" data-action="rollTable" data-table="{{system.tables.trinket}}">
+        {{localize 'MARROW.Roll.Trinket'}}</button>
+      <button type="button" data-action="rollTable" data-table="{{system.tables.crest}}">
+        {{localize 'MARROW.Roll.Crest'}}</button>
+    </div>
+  {{/if}}
+{{/if}}
+
+{{#if is.working}}
+  {{!-- XVII.2: `{B}` is the caster's Blight Level. --}}
+  <div class="fields">
+    <label class="field wide">
+      <span>{{localize 'MARROW.Working.Formula'}}</span>
+      <input type="text" name="system.formula" value="{{system.formula}}"
+             placeholder="{{localize 'MARROW.Working.FormulaHint'}}" />
+    </label>
+  </div>
+  {{#if scaledFormula}}
+    <p class="scaled">{{localize 'MARROW.Working.AtBlight'}} <strong>{{blight}}</strong>:
+      <span class="formula">{{scaledFormula}}</span></p>
+  {{/if}}
+  <p class="ladder-note">{{localize 'MARROW.Working.LadderNote'}}</p>
+{{/if}}
+
+{{#if is.condition}}
+  {{!-- XI.3, XIII.1. --}}
+  <div class="fields">
+    <label class="field" data-tooltip="{{localize 'MARROW.BleedingHint'}}">
+      <span>{{localize 'MARROW.Bleeding'}}</span>
+      <input type="number" name="system.bleeding" value="{{system.bleeding}}" />
+    </label>
+    <label class="check">
+      <input type="checkbox" name="system.permanent" {{checked system.permanent}} />
+      <span>{{localize 'MARROW.PermanentUntilTreated'}}</span>
+    </label>
+  </div>
+{{/if}}
+
+<h3>{{localize 'MARROW.Description'}}</h3>
+<prose-mirror name="system.description" value="{{system.description}}"
+              toggled="true" data-enriched="{{enrichedDescription}}"></prose-mirror>
+
+</section>

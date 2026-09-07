@@ -1,0 +1,28 @@
+{{!-- I.3, I.8, I.9: who you are, what you do, and what you have left. --}}
+<header class="marrow-header">
+  <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}" data-action="editImage" />
+
+  <div class="identity">
+    <input class="name" type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'MARROW.Unnamed'}}" />
+
+    <div class="identity-fields">
+      <label class="field">
+        <span>{{localize 'MARROW.ClassLabel'}}</span>
+        <input type="text" name="system.className" value="{{system.className}}" readonly
+               placeholder="{{localize 'MARROW.DropAClass'}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Pronouns'}}</span>
+        <input type="text" name="system.pronouns" value="{{system.pronouns}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Silver'}}</span>
+        <input type="number" name="system.silver" value="{{system.silver}}" />
+      </label>
+      <label class="field" data-tooltip="{{localize 'MARROW.TallyHint'}}">
+        <span>{{localize 'MARROW.Tally'}}</span>
+        <input type="number" name="system.tally" value="{{system.tally}}" />
+      </label>
+    </div>
+  </div>
+</header>

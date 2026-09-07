@@ -1,0 +1,104 @@
+# Conversion notes
+
+What is done, what is stubbed, what needs a ruling from you, and where I read `MARROW.md`
+one way when it could reasonably be read another.
+
+---
+
+## Rulings I had to make, and would like you to confirm
+
+These are places where `MARROW.md` is genuinely ambiguous. In each case I took the reading
+that invents the least, and each is a small, isolated change if you rule the other way.
+
+### 1. The Blighted's first three levels — *II, XVI.1*
+
+II says the Blighted "begin play at **Blight 3**. The penalties for those first three levels
+are **already accounted for in the adjustments above**."
+
+Two readings:
+
+- **(a)** The adjustments are the *net* numbers, so the Blight's −1 per level does not apply
+  for levels 1–3. A Blighted at Blight 4 would take only −1.
+- **(b)** The adjustments were *sized* knowing the −3 will land, so the penalty applies
+  uniformly like everyone else's. A Blighted at Blight 4 takes −4.
+
+**I implemented (b)**, because XVI.1 says "**Every** level of Blight is a permanent −1 to all
+Stats and all Saves. Every one." with no exception, and (a) would require inventing an
+exemption mechanic that appears nowhere in the text.
+
+Reading (b) does leave the Blighted's Strength, Speed and Combat sitting at −3 with no
+compensating bonus, which is what makes me want your confirmation.
+
+*If you rule (a):* add an exemption field to `CharacterData` and change the penalty in
+`prepareDerivedData()` from `blight` to `Math.max(0, blight - exempt)`. Roughly six lines in
+`module/data/character.mjs`.
+
+### 2. Does the Blight penalty reach a Retainer? — *XVI.1, XX*
+
+XX's hiring table gives Touched retainers Combat 20 / Instinct 35 alongside a starting
+**Blight 4**. Same question as above, same answer: the table numbers are treated as written,
+and the −4 applies on top. See `module/data/companion.mjs`.
+
+### 3. Thaumaturgy's prerequisite — *III.4 vs III.5*
+
+III.4 and III.5 disagree about what *Thaumaturgy* requires. **Unresolved.** The Skill is
+shipped with the prerequisites III.4 lists; nothing in code depends on which is right, so
+this is a content fix whenever you decide.
+
+### 4. Stress past 20 — *XI*
+
+XI: "Maximum Stress is 20; anything past 20 instead reduces the most relevant Stat or Save by
+that amount." *Which* Stat is a judgement call, so the system caps Stress at 20 and posts a
+notification naming the overflow. It does not reduce anything on its own.
+
+### 5. A Working's Critical Failure costs no Stress
+
+XVII.1's ladder lists Critical Failure as "1d5 Blight and roll on the Panic Table" — no
+Stress, unlike Failure directly above it. Implemented exactly as written, on the assumption
+the omission is deliberate.
+
+---
+
+## Deliberate departures from the old system
+
+This is a rebuild, not a port, so a few things that existed before are gone on purpose:
+
+- **No XP, Rank, Level, or Resolve.** None of them appear in `MARROW.md`.
+- **Retainers are the `companion` Actor type**, labelled "Retainer" everywhere the player
+  reads it — `MARROW.md` XX's own word. The type *key* differs only to avoid colliding with
+  anything else in an existing world.
+- **All third-party art was removed.** Item and table artwork now uses Foundry's own bundled
+  `icons/` set. The one image in this repo, `images/ui/pause.svg`, is ours.
+- **The stylesheet was rewritten**, keyed to the new markup. It is hand-maintained; there is
+  no SCSS pipeline and none is wanted.
+
+---
+
+## Done
+
+- **Data models** — `character`, `companion`, and all seven Item types, on
+  `foundry.abstract.TypeDataModel`.
+- **The Blight as a first-class attribute** (XVI) — reaches every Stat, every Save, the
+  Stress floor, and the Body Save's Advantage state, entirely through derived data, so the
+  penalty can never compound into a stored number.
+- **The dice** (X) — d100 roll-under, Advantage/Disadvantage that cancel, criticals on
+  doubles, 90–99 always fails.
+- **Consequences** (X.1, X.2, X.4, XI) — 1 Stress on a failure, Panic on a Critical Failure,
+  Rest shedding the ones digit.
+- **Workings** (XVII) — the full cost ladder, `{B}` substitution, The Calling's private
+  Warden table.
+- **Damage and armour** (XII.5, XIII) — AP as a threshold rather than a pool, DR first,
+  Anti-Armor, Wounds by damage type, carry-over across multiple Wounds, blind Death Saves.
+- **Sheets** — ApplicationV2, same arrangement as before, rebuilt underneath.
+- **`tools/validate.py`** — including a check that every pack is *openable* by Foundry, which
+  is the specific failure that made the roll tables silently empty last time.
+
+## Not done yet
+
+- **Compendium packs.** The twelve declared in `system.json` are not built. `validate.py`
+  fails on them until they are, which is intentional.
+- **Character creation** (I) — the nine-step flow, including the 2d10+25 / 2d10+10 rolls and
+  the Loadout / Trinket / Crest draws.
+- **Macros** for the common rolls.
+- **Blight triggers on scenes** (XVI.3) — ground types are in `config.mjs` and the Save is
+  implemented, but nothing yet ties a Scene to a ground type. You said "fine for now".

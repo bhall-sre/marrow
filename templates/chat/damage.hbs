@@ -1,0 +1,33 @@
+{{!--
+  XII.4's damage half. Nothing is applied from here automatically: XII.5's armour rule is a
+  threshold, so who it lands on and whether their armour survives is a decision, not an
+  arithmetic step. The buttons make it one click.
+--}}
+<div class="marrow chat-card damage{{#if critical}} critical{{/if}}">
+
+  <header class="card-head">
+    <span class="what">{{weapon.name}}</span>
+    <span class="damage-type">{{damageTypeLabel}}</span>
+  </header>
+
+  <div class="roll-line">
+    <span class="total">{{total}}</span>
+    <span class="vs">{{localize 'MARROW.Damage'}}</span>
+    {{#if antiArmor}}<span class="tag aa" data-tooltip="{{localize 'MARROW.AAHint'}}">AA</span>{{/if}}
+  </div>
+
+  {{#if targetName}}<div class="target-line">{{localize 'MARROW.Against'}} {{targetName}}</div>{{/if}}
+
+  <div class="card-buttons">
+    <button type="button" data-action="applyDamage" data-amount="{{total}}"
+            data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}">
+      {{localize 'MARROW.Apply'}}
+    </button>
+    <button type="button" data-action="applyDamage" data-amount="{{total}}"
+            data-damage-type="{{damageType}}" data-anti-armor="{{antiArmor}}" data-ignore-armor="true"
+            data-tooltip="{{localize 'MARROW.ApplyDirectHint'}}">
+      {{localize 'MARROW.ApplyDirect'}}
+    </button>
+  </div>
+
+</div>

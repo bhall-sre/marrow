@@ -1,0 +1,51 @@
+{{!--
+  A Check, shown as the four things that decided it: the number, the target, whether any
+  [+]/[-] applied and why, and what it cost.
+--}}
+<div class="marrow chat-card check outcome-{{result.outcome}}">
+
+  <header class="card-head">
+    <span class="what">{{label}}</span>
+    {{#if check.skill}}
+      <span class="skill">{{check.skill.name}} +{{check.skillBonus}}</span>
+    {{/if}}
+  </header>
+
+  <div class="roll-line">
+    <span class="total">{{pad2 result.total}}</span>
+    <span class="vs">{{localize 'MARROW.Under'}}</span>
+    <span class="target">{{result.target}}</span>
+  </div>
+
+  {{#if check.sources.length}}
+    <ul class="sources {{result.advantage}}">
+      {{#each check.sources as |src|}}
+        <li class="{{src.effect}}">
+          <span class="mark">{{#if (eq src.effect 'advantage')}}[+]{{else}}[-]{{/if}}</span>
+          {{src.source}}
+        </li>
+      {{/each}}
+      {{#unless result.advantage}}
+        {{!-- X.3: "They cancel each other out." --}}
+        <li class="cancelled">{{localize 'MARROW.Cancelled'}}</li>
+      {{/unless}}
+    </ul>
+  {{/if}}
+
+  <div class="verdict">{{localize (concat 'MARROW.Outcome.' result.outcome)}}</div>
+
+  {{#if working}}
+    {{!-- XVII.1: "The Working always happens. The roll decides only what it takes out of you." --}}
+    <div class="working-line">
+      <span class="name">{{working.name}}</span>
+      {{#if working.formula}}<span class="formula">{{working.formula}}</span>{{/if}}
+    </div>
+  {{/if}}
+
+  {{#if result.consequences.notes.length}}
+    <ul class="consequences">
+      {{#each result.consequences.notes as |note|}}<li>{{note}}</li>{{/each}}
+    </ul>
+  {{/if}}
+
+</div>

@@ -1,0 +1,134 @@
+<section class="sheet-body">
+
+{{#if (eq activeTab 'skills')}}
+  {{!-- III. Rank is what each line leads with, because rank is the whole difference
+        between one Skill and another. --}}
+  <div class="tab-content skills">
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Skills'}}</h3>
+      <button type="button" data-action="createItem" data-type="skill">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.skill as |item|}}
+        {{> "marrow.item-row" item=item detail=(concat item.system.rankLabel " +" item.system.bonus)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Skills'}}</li>
+      {{/each}}
+    </ul>
+
+    {{#if items.class.length}}
+      <div class="section-head"><h3>{{localize 'MARROW.Tab.Class'}}</h3></div>
+      <ul class="item-list">
+        {{#each items.class as |item|}}
+          {{> "marrow.item-row" item=item detail=""}}
+        {{/each}}
+      </ul>
+    {{/if}}
+
+    {{#if items.condition.length}}
+      {{!-- XI.3: "permanent until treated ... They follow you into every session." --}}
+      <div class="section-head"><h3>{{localize 'MARROW.Tab.Conditions'}}</h3></div>
+      <ul class="item-list conditions">
+        {{#each items.condition as |item|}}
+          {{> "marrow.item-row" item=item
+              detail=(pick item.system.bleeding (concat (localize 'MARROW.Bleeding') " +" item.system.bleeding) "")}}
+        {{/each}}
+      </ul>
+    {{/if}}
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'arms')}}
+  {{!-- VIII. --}}
+  <div class="tab-content arms">
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Weapons'}}</h3>
+      <button type="button" data-action="createItem" data-type="weapon">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.weapon as |item|}}
+        {{> "marrow.item-row" item=item equippable=true
+            detail=(concat item.system.damage " &middot; " item.system.damageTypeLabel
+                           " &middot; " item.system.rangeLabel)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Weapons'}}</li>
+      {{/each}}
+    </ul>
+
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Armor'}}</h3>
+      <button type="button" data-action="createItem" data-type="armor">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.armor as |item|}}
+        {{> "marrow.item-row" item=item equippable=true
+            detail=(armorLine item)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Armor'}}</li>
+      {{/each}}
+    </ul>
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'gear')}}
+  {{!-- IX, XVIII.2, VI, VII: one Item type, four sections. --}}
+  <div class="tab-content gear">
+    {{#each MARROW.gearCategories as |label category|}}
+      <div class="section-head">
+        <h3>{{localize label}}</h3>
+        <button type="button" data-action="createItem" data-type="gear" data-category="{{category}}">
+          <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+      </div>
+      <ul class="item-list">
+        {{#each (lookup ../items.gearByCategory category) as |item|}}
+          {{> "marrow.item-row" item=item
+              detail=(pick (gt item.system.quantity 1) (concat "&times;" item.system.quantity) "")}}
+        {{else}}
+          <li class="empty">&mdash;</li>
+        {{/each}}
+      </ul>
+    {{/each}}
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'workings')}}
+  {{!-- XVII. --}}
+  <div class="tab-content workings">
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Workings'}}</h3>
+      <button type="button" data-action="createItem" data-type="working">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+
+    {{#unless canWork}}
+      {{!-- XVII: "Anyone with a Blight Level of 1 or higher may attempt a Working." --}}
+      <p class="notice">{{localize 'MARROW.Working.NeedsBlight'}}</p>
+    {{/unless}}
+
+    <ul class="item-list">
+      {{#each items.working as |item|}}
+        {{> "marrow.item-row" item=item detail=(scaled item ../system.blight.value)}}
+      {{else}}
+        <li class="empty">{{localize 'MARROW.Empty.Workings'}}</li>
+      {{/each}}
+    </ul>
+
+    <p class="ladder-note">{{localize 'MARROW.Working.LadderNote'}}</p>
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'notes')}}
+  <div class="tab-content notes">
+    <h3>{{localize 'MARROW.Biography'}}</h3>
+    <prose-mirror name="system.biography" value="{{system.biography}}"
+                  toggled="true" data-enriched="{{enrichedBiography}}"></prose-mirror>
+    <h3>{{localize 'MARROW.Notes'}}</h3>
+    <prose-mirror name="system.notes" value="{{system.notes}}"
+                  toggled="true" data-enriched="{{enrichedNotes}}"></prose-mirror>
+  </div>
+{{/if}}
+
+</section>

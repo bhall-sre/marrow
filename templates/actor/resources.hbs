@@ -1,0 +1,74 @@
+{{!--
+  The strip of things that are being spent: Health and Wounds (I.4, XIII), Stress (XI),
+  the Blight (XVI), and what armour is standing between you and the next hit (XII.5).
+--}}
+<section class="resources">
+
+  <div class="resource health">
+    <span class="resource-label">{{localize 'MARROW.Health'}}</span>
+    <div class="pair">
+      <input type="number" name="system.health.value" value="{{system.health.value}}" />
+      <span class="slash">/</span>
+      <input type="number" name="system.health.max" value="{{system.health.max}}" />
+    </div>
+    <div class="sub">{{localize 'MARROW.CurrentMax'}}</div>
+  </div>
+
+  <div class="resource wounds">
+    <span class="resource-label">{{localize 'MARROW.Wounds'}}</span>
+    <div class="pair">
+      <input type="number" name="system.wounds.value" value="{{system.wounds.value}}" />
+      <span class="slash">/</span>
+      <input type="number" name="system.wounds.max" value="{{system.wounds.max}}" />
+    </div>
+    <div class="sub">{{localize 'MARROW.TakenMax'}}</div>
+  </div>
+
+  {{!-- XI: Minimum Stress is derived; the Blight can push it above your own floor. --}}
+  <div class="resource stress">
+    <button type="button" class="resource-label rollable" data-action="rest"
+            data-tooltip="{{localize 'MARROW.RestHint'}}">{{localize 'MARROW.StressLabel'}}</button>
+    <div class="pair">
+      <input type="number" name="system.stress.value" value="{{system.stress.value}}" />
+      <span class="slash">/</span>
+      <span class="derived" data-tooltip="{{localize 'MARROW.MinStressHint'}}">{{system.stress.min}}</span>
+    </div>
+    <div class="sub">
+      {{localize 'MARROW.CurrentMin'}}
+      {{#if system.stress.blightPenalty}}
+        <span class="blight-note">+{{system.stress.blightPenalty}}</span>
+      {{/if}}
+    </div>
+  </div>
+
+  {{!-- XVI.1. The band matters more than the number, so the band is what the sheet says. --}}
+  <div class="resource blight band-{{blightBand.key}}">
+    <button type="button" class="resource-label rollable" data-action="blightExposure"
+            data-ground="tainted" data-tooltip="{{localize 'MARROW.Blight.ExposureHint'}}">
+      {{localize 'MARROW.Blight.Label'}}
+    </button>
+    <div class="pair">
+      <input type="number" name="system.blight.value" value="{{system.blight.value}}" min="0" max="10" />
+      <span class="slash">/</span>
+      <span class="derived">10</span>
+    </div>
+    <div class="sub band-name" data-tooltip="{{blightBand.note}}">{{blightBand.label}}</div>
+  </div>
+
+  {{!-- XII.5: AP is a threshold, not a pool, so it is shown as one number and not a bar. --}}
+  <div class="resource armor">
+    <span class="resource-label">{{localize 'MARROW.Armor'}}</span>
+    <div class="pair">
+      <span class="derived" data-tooltip="{{localize 'MARROW.APHint'}}">{{system.armor.points}}</span>
+      <span class="slash">·</span>
+      <span class="derived" data-tooltip="{{localize 'MARROW.DRHint'}}">{{system.armor.damageReduction}}</span>
+    </div>
+    <div class="sub">{{localize 'MARROW.APDR'}} <span class="kind">{{armorKindLabel}}</span></div>
+  </div>
+
+</section>
+
+{{#if system.bleeding}}
+  {{!-- XIII.1: cumulative, ignores armour and DR. Worth shouting about. --}}
+  <div class="bleeding-banner">{{localize 'MARROW.Bleeding'}} {{system.bleeding}}</div>
+{{/if}}

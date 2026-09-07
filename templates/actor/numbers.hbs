@@ -1,0 +1,56 @@
+{{!--
+  I.1 and I.2: the seven numbers you roll under.
+
+  Each shows the total you actually roll against, with the number you wrote at creation kept
+  editable underneath. When the Blight is taking a cut (XVI.1) the two differ, and the
+  difference is shown rather than hidden -- the whole point of the Blight is that you watch
+  it happen.
+--}}
+<section class="numbers">
+
+  <div class="group stats">
+    <h2>{{localize 'MARROW.Stats'}}</h2>
+    <div class="grid">
+      {{#each system.stats as |stat key|}}
+        <div class="score">
+          <button type="button" class="score-label rollable" data-action="roll" data-key="{{key}}">
+            {{stat.label}}
+          </button>
+          <div class="score-total{{#if stat.penalty}} blighted{{/if}}"
+               data-action="roll" data-key="{{key}}">{{stat.total}}</div>
+          <div class="score-base">
+            <input type="number" name="system.stats.{{key}}.value" value="{{stat.value}}" />
+            {{#if stat.penalty}}<span class="penalty">&minus;{{stat.penalty}}</span>{{/if}}
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="group saves">
+    <h2>{{localize 'MARROW.Saves'}}</h2>
+    <div class="grid">
+      {{#each system.saves as |save key|}}
+        <div class="score">
+          <button type="button" class="score-label rollable" data-action="roll" data-key="{{key}}">
+            {{save.label}}
+          </button>
+          <div class="score-total{{#if save.penalty}} blighted{{/if}}"
+               data-action="roll" data-key="{{key}}">{{save.total}}</div>
+          <div class="score-base">
+            <input type="number" name="system.saves.{{key}}.value" value="{{save.value}}" />
+            {{#if save.penalty}}<span class="penalty">&minus;{{save.penalty}}</span>{{/if}}
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="quick-rolls">
+    <button type="button" data-action="rest">{{localize 'MARROW.Roll.Rest'}}
+      <span class="hint">{{worstSave}}</span></button>
+    <button type="button" data-action="panic">{{localize 'MARROW.Roll.Panic'}}
+      <span class="hint">{{localize 'MARROW.Roll.PanicHint'}}</span></button>
+  </div>
+
+</section>

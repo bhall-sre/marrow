@@ -1,0 +1,116 @@
+<section class="sheet-body">
+
+{{#if (eq activeTab 'hire')}}
+  {{!-- XX. The terms of the arrangement, which is most of what a retainer is. --}}
+  <div class="tab-content hire">
+    <label class="stacked">
+      <span>{{localize 'MARROW.Retainer.Motivation'}}</span>
+      <input type="text" name="system.motivation" value="{{system.motivation}}"
+             placeholder="{{localize 'MARROW.Retainer.MotivationHint'}}" />
+    </label>
+
+    <div class="money-grid">
+      <label class="field">
+        <span>{{localize 'MARROW.Wage'}}</span>
+        <input type="number" name="system.wage" value="{{system.wage}}" />
+      </label>
+      <label class="field" data-tooltip="{{localize 'MARROW.Retainer.DangerMoneyHint'}}">
+        <span>{{localize 'MARROW.Retainer.DangerMoney'}}</span>
+        <input type="number" name="system.dangerMoney" value="{{system.dangerMoney}}" />
+      </label>
+      <label class="field" data-tooltip="{{localize 'MARROW.Retainer.DeathPriceHint'}}">
+        <span>{{localize 'MARROW.Retainer.DeathPrice'}}</span>
+        <input type="number" name="system.deathPrice" value="{{system.deathPrice}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Silver'}}</span>
+        <input type="number" name="system.silver" value="{{system.silver}}" />
+      </label>
+    </div>
+
+    <label class="stacked">
+      <span>{{localize 'MARROW.Retainer.Beneficiary'}}</span>
+      <input type="text" name="system.beneficiary" value="{{system.beneficiary}}" />
+    </label>
+
+    <div class="checks">
+      <label class="check">
+        <input type="checkbox" name="system.guilded" {{checked system.guilded}} />
+        <span>{{localize 'MARROW.Retainer.Guilded'}}</span>
+      </label>
+      <label class="check" data-tooltip="{{localize 'MARROW.Retainer.ShortedHint'}}">
+        <input type="checkbox" name="system.shorted" {{checked system.shorted}} />
+        <span>{{localize 'MARROW.Retainer.Shorted'}}</span>
+      </label>
+    </div>
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'kit')}}
+  {{!-- XX: "Retainers own the tools of their trade." --}}
+  <div class="tab-content kit">
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Weapons'}}</h3>
+      <button type="button" data-action="createItem" data-type="weapon">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.weapon as |item|}}
+        {{> "marrow.item-row" item=item equippable=true
+            detail=(concat item.system.damage " &middot; " item.system.damageTypeLabel)}}
+      {{else}}
+        <li class="empty">&mdash;</li>
+      {{/each}}
+    </ul>
+
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Armor'}}</h3>
+      <button type="button" data-action="createItem" data-type="armor">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.armor as |item|}}
+        {{> "marrow.item-row" item=item equippable=true detail=(armorLine item)}}
+      {{else}}
+        <li class="empty">&mdash;</li>
+      {{/each}}
+    </ul>
+
+    <div class="section-head">
+      <h3>{{localize 'MARROW.Tab.Gear'}}</h3>
+      <button type="button" data-action="createItem" data-type="gear">
+        <i class="fa-solid fa-plus"></i> {{localize 'MARROW.Add'}}</button>
+    </div>
+    <ul class="item-list">
+      {{#each items.gear as |item|}}
+        {{> "marrow.item-row" item=item
+            detail=(pick (gt item.system.quantity 1) (concat "&times;" item.system.quantity) "")}}
+      {{else}}
+        <li class="empty">&mdash;</li>
+      {{/each}}
+    </ul>
+
+    {{#if items.condition.length}}
+      <div class="section-head"><h3>{{localize 'MARROW.Tab.Conditions'}}</h3></div>
+      <ul class="item-list conditions">
+        {{#each items.condition as |item|}}
+          {{> "marrow.item-row" item=item
+              detail=(pick item.system.bleeding (concat (localize 'MARROW.Bleeding') " +" item.system.bleeding) "")}}
+        {{/each}}
+      </ul>
+    {{/if}}
+  </div>
+{{/if}}
+
+{{#if (eq activeTab 'notes')}}
+  <div class="tab-content notes">
+    <h3>{{localize 'MARROW.Biography'}}</h3>
+    <prose-mirror name="system.biography" value="{{system.biography}}"
+                  toggled="true" data-enriched="{{enrichedBiography}}"></prose-mirror>
+    <h3>{{localize 'MARROW.Notes'}}</h3>
+    <prose-mirror name="system.notes" value="{{system.notes}}"
+                  toggled="true" data-enriched="{{enrichedNotes}}"></prose-mirror>
+  </div>
+{{/if}}
+
+</section>

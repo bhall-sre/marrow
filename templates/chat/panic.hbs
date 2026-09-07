@@ -1,0 +1,12 @@
+{{!-- XI.2: roll OVER your current Stress. The only roll-over in the game. --}}
+<div class="marrow chat-card panic {{#if result.success}}held{{else}}broke{{/if}}">
+  <header class="card-head"><span class="what">{{localize 'MARROW.Roll.Panic'}}</span></header>
+  <div class="roll-line">
+    <span class="total">{{result.total}}</span>
+    <span class="vs">{{localize 'MARROW.Over'}}</span>
+    <span class="target">{{result.stress}}</span>
+  </div>
+  <div class="verdict">
+    {{#if result.success}}{{localize 'MARROW.Panic.Held'}}{{else}}{{localize 'MARROW.Panic.Broke'}}{{/if}}
+  </div>
+</div>

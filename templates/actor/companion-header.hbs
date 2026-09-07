@@ -1,0 +1,28 @@
+{{!-- XX. Occupation and wage sit in the header because they are the two things you decide
+      about a retainer before anything else. --}}
+<header class="marrow-header companion">
+  <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}" data-action="editImage" />
+
+  <div class="identity">
+    <input class="name" type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'MARROW.Unnamed'}}" />
+
+    <div class="identity-fields">
+      <label class="field">
+        <span>{{localize 'MARROW.Occupation'}}</span>
+        <input type="text" name="system.occupation" value="{{system.occupation}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Pronouns'}}</span>
+        <input type="text" name="system.pronouns" value="{{system.pronouns}}" />
+      </label>
+      <label class="field">
+        <span>{{localize 'MARROW.Wage'}}</span>
+        <input type="number" name="system.wage" value="{{system.wage}}" />
+      </label>
+      <label class="field blight-field band-{{blightBand.key}}">
+        <span>{{localize 'MARROW.Blight.Label'}}</span>
+        <input type="number" name="system.blight.value" value="{{system.blight.value}}" min="0" max="10" />
+      </label>
+    </div>
+  </div>
+</header>

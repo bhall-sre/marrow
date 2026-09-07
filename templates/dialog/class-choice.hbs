@@ -1,0 +1,21 @@
+{{!-- II: "+5 to one Stat of your choice" / "-10 to one Stat of your choice". --}}
+<form class="marrow class-choice-form{{#if isPenalty}} penalty{{/if}}">
+  <p class="prompt">
+    {{#if isPenalty}}
+      {{localize 'MARROW.Dialog.ChoosePenalty'}}
+    {{else}}
+      {{localize 'MARROW.Dialog.ChooseBonus'}}
+    {{/if}}
+    <strong>{{numberFormat amount sign=true}}</strong>
+  </p>
+
+  <div class="choices">
+    {{#each options as |opt|}}
+      <label class="choice">
+        <input type="radio" name="choice" value="{{opt.key}}" {{#if @first}}checked{{/if}} />
+        <span class="stat-name">{{opt.label}}</span>
+        <span class="stat-value">{{opt.value}}</span>
+      </label>
+    {{/each}}
+  </div>
+</form>
