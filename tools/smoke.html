@@ -399,6 +399,51 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
   } else {
     log('bad', `expected 2 Conditions (Paralyzed + Flesh Torn Away), got: ${names.join(', ') || '(none)'}`);
   }
+
+  head('12. The death clock stabilizes, ticks, and expires correctly');
+  /*
+    XIII's "stabilizing... stops the clock" and the Death Save table's own "dying" result
+    ("die in 1d5 rounds without intervention") share one clock (startDeathClock/
+    tickDeathClock/stabilizeDeathClock in damage.mjs), told apart only by its `kind`. This
+    exercises both branches without needing a real RollTable: stabilizing before the clock
+    reaches zero must clear it silently, and a "dying" clock reaching zero unstabilized must
+    end in the Dead Condition -- not a second Death Save, which XIII.2 never offers.
+  */
+  const dmg = await import(`../module/dice/damage.mjs?t=${Date.now()}`);
+  function fakeClockActor() {
+    const flags = {};
+    const conditions = [];
+    return {
+      name: 'Test',
+      uuid: 'Actor.test',
+      system: {},
+      async setFlag(scope, key, value) { flags[key] = value; },
+      async unsetFlag(scope, key) { delete flags[key]; },
+      getFlag(scope, key) { return flags[key]; },
+      async createEmbeddedDocuments(type, docs) { conditions.push(...docs); return docs; },
+      _flags: flags, _conditions: conditions,
+    };
+  }
+
+  const stabilized = fakeClockActor();
+  await dmg.startDeathClock(stabilized, 'lethal', 3);
+  await dmg.stabilizeDeathClock(stabilized);
+  if (stabilized.getFlag('marrow', 'deathClock') === undefined) {
+    log('ok', 'ok - stabilizing before it expires clears the clock');
+  } else {
+    log('bad', 'stabilizeDeathClock left the clock running');
+  }
+
+  const dying = fakeClockActor();
+  await dmg.startDeathClock(dying, 'dying', 1);
+  await dmg.tickDeathClock(dying);
+  if (dying.getFlag('marrow', 'deathClock') === undefined && dying._conditions.some((c) => /Dead/i.test(c.name))) {
+    log('ok', 'ok - a "dying" clock reaching zero ends in the Dead Condition, no second Save');
+  } else {
+    log('bad', `expected the Dead Condition and no clock left, got clock=`
+      + `${JSON.stringify(dying.getFlag('marrow', 'deathClock'))} conditions=`
+      + `${dying._conditions.map((c) => c.name).join(', ') || '(none)'}`);
+  }
 })();
 </script>
 <script>
@@ -414,7 +459,7 @@ const TEMPLATES = [
   'templates/chat/check.hbs', 'templates/chat/panic.hbs', 'templates/chat/damage.hbs',
   'templates/chat/healing.hbs',
   'templates/chat/damage-applied.hbs', 'templates/chat/effects-applied.hbs',
-  'templates/chat/death.hbs', 'templates/chat/item.hbs',
+  'templates/chat/death.hbs', 'templates/chat/death-clock.hbs', 'templates/chat/item.hbs',
   'templates/dialog/check.hbs', 'templates/dialog/class-choice.hbs',
   'templates/dialog/creation.hbs',
 ];

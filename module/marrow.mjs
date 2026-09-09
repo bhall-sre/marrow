@@ -13,7 +13,10 @@ import { MarrowCreatureSheet } from './sheets/creature-sheet.mjs';
 import { MarrowItemSheet } from './sheets/item-sheet.mjs';
 import { registerHelpers, preloadTemplates } from './helpers.mjs';
 import { registerSettings } from './settings.mjs';
-import { applyDamageFromChat, applyHealingFromChat, undoDamageApplication } from './dice/damage.mjs';
+import {
+  applyDamageFromChat, applyHealingFromChat, undoDamageApplication,
+  checkTheBody, stabilizeDeathClock, tickDeathClock,
+} from './dice/damage.mjs';
 import { CharacterCreation, registerCreationButton } from './apps/creation.mjs';
 
 Hooks.once('init', () => {
@@ -171,6 +174,40 @@ Hooks.on('renderChatMessageHTML', (message, html) => {
       await undoDamageApplication(message);
     });
   }
+
+  // XIII.2's "Check the Body", and the clock XIII's Lethal (and the Death Save table's own
+  // "dying" result) put on an actor -- each button names its actor directly, since these can
+  // sit in chat for many rounds and the token that was selected when they were posted may no
+  // longer be.
+  for (const button of html.querySelectorAll('[data-action="checkTheBody"]')) {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const actor = await fromUuid(button.dataset.actorUuid);
+      if (!actor) return;
+      button.disabled = true;
+      await checkTheBody(actor);
+    });
+  }
+
+  for (const button of html.querySelectorAll('[data-action="stabilizeDeathClock"]')) {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const actor = await fromUuid(button.dataset.actorUuid);
+      if (!actor) return;
+      button.disabled = true;
+      await stabilizeDeathClock(actor);
+    });
+  }
+
+  for (const button of html.querySelectorAll('[data-action="tickDeathClock"]')) {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const actor = await fromUuid(button.dataset.actorUuid);
+      if (!actor) return;
+      button.disabled = true;
+      await tickDeathClock(actor);
+    });
+  }
 });
 
 /**
@@ -234,13 +271,18 @@ Hooks.on('createActor', (actor) => syncWorkings(actor));
  */
 Hooks.on('combatTurnChange', async (combat, prior, current) => {
   if (!game.user.isActiveGM) return;
-  if (!game.settings.get('marrow', 'autoBleed')) return;
 
   const combatant = combat.combatants.get(current.combatantId);
   const actor = combatant?.actor;
-  if (!actor || !(actor.system.bleeding > 0)) return;
+  if (!actor) return;
 
-  await actor.tickBleeding();
+  if (game.settings.get('marrow', 'autoBleed') && actor.system.bleeding > 0) {
+    await actor.tickBleeding();
+  }
+  // XIII's Lethal clock and the Death Save table's own "dying" clock tick once at the start
+  // of the actor's own turn, the same timing autoBleed already uses -- a GM running without
+  // a combat encounter ticks these by hand instead, from the clock card's own button.
+  if (actor.getFlag('marrow', 'deathClock')) await tickDeathClock(actor);
 });
 
 /**

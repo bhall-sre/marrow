@@ -171,8 +171,22 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
     specific Master, whose own listed prerequisites are the only Expert choices, whose own
     prerequisites are the only Trained choices. `#scholarChain` in `creation.mjs` walks that
     chain instead of counting against a table.
-- **All third-party art was removed.** Item and table artwork now uses Foundry's own bundled
-  `icons/` set. The one image in this repo, `images/ui/pause.svg`, is ours.
+- **A Death Save is genuinely face down, even from the Warden.** XIII.2 says the Warden
+  "sets it face down on the table without looking," and the original build did not honor
+  that half of the sentence -- the roll was made and immediately whispered to the GM, just
+  not to the players. It is now rolled at the moment it happens and kept on the actor's own
+  `deathSaveResult` flag, unseen by anyone, with only the public face-down card posted; a
+  "Check the Body" button on that card (`checkTheBody` in `damage.mjs`) is the one moment the
+  result is read, and it runs whichever of the table's three outcomes it turns out to be.
+- **XIII's Lethal clock, and the Death Save table's own "dying" clock, are both implemented**
+  as one mechanism (`startDeathClock`/`tickDeathClock`/`stabilizeDeathClock`), told apart by
+  a `kind` flag. It ticks once at the start of the actor's own combat turn -- the same timing
+  `autoBleed` already uses for Bleeding -- with a manual "-1 Round" button on the clock's own
+  chat card for a Warden running the scene without a Foundry combat encounter. "Stabilizing"
+  itself is not tied to any specific Skill check succeeding (Field Medicine, Surgery, a
+  Working, and a hot iron with a Body Save are all named in the text as ways to do it, and
+  nothing in the data model distinguishes them); the clock's card carries a Stabilize button
+  the Warden clicks once whichever of those actually happens at the table.
 - **The stylesheet was rewritten**, keyed to the new markup. It is hand-maintained; there is
   no SCSS pipeline and none is wanted.
 

@@ -1,6 +1,6 @@
 import { MARROW } from '../config.mjs';
 import { MarrowCheck, drawSystemTable, resolveTable, applyConsequences } from './check.mjs';
-import { applyResultEffects, announceEffects } from './effects.mjs';
+import { applyResultEffects, announceEffects, addCondition } from './effects.mjs';
 import { DISADVANTAGE } from './roll.mjs';
 
 /**
@@ -130,6 +130,15 @@ export async function takeWound(actor, damageType, outcome = {}) {
   outcome.effects = effects;
   await announceEffects(actor, effects);
 
+  // XIII: "Lethal means you are dying. You will make a Death Save in 1d10 rounds unless
+  // somebody stabilizes you first." A row's severity is the word stripRecognized already
+  // throws away, so it has to be read here, off the row's own text, before that happens.
+  const plain = String(text).replace(/<[^>]+>/g, ' ').trim();
+  if (/^Lethal\b/i.test(plain)) {
+    const rounds = (await new Roll('1d10').evaluate()).total;
+    await startDeathClock(actor, 'lethal', rounds);
+  }
+
   if (next >= wounds.max || effects.deathSave) {
     outcome.deathSave = true;
     await deathSave(actor);
@@ -138,8 +147,12 @@ export async function takeWound(actor, damageType, outcome = {}) {
 }
 
 /**
- * XIII.2. The Warden rolls it face down and it "is revealed only when somebody spends a
- * turn checking your body, and not before" -- so the draw is made blind, to the GM only.
+ * XIII.2, read exactly: "The Warden puts 1d10 in a cup, shakes it, and sets it face down on
+ * the table WITHOUT LOOKING. It stays there. It is revealed only when somebody spends a turn
+ * checking your body, and not before." Not "whispered to the Warden" -- nobody looks, not
+ * even the GM, until checkTheBody() does. The roll is made now (someone has to hold the
+ * result), kept on the actor's own flag rather than in any chat message, and only the public
+ * face-down card is posted.
  */
 export async function deathSave(actor) {
   const table = await resolveTable(MARROW.tables.death);
@@ -149,27 +162,112 @@ export async function deathSave(actor) {
   }
   const draw = await table.roll();
   const result = draw.results[0];
+  await actor.setFlag('marrow', 'deathSaveResult', { text: result?.description ?? result?.text ?? '' });
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: await foundry.applications.handlebars.renderTemplate(
       'systems/marrow/templates/chat/death.hbs',
-      { actor, text: result?.description ?? result?.text ?? '' },
+      { line: game.i18n.format('MARROW.Death.FaceDown', { name: actor.name }), actorUuid: actor.uuid },
     ),
-    rolls: [draw.roll],
-    whisper: ChatMessage.getWhisperRecipients('GM'),
-    blind: true,
-    flags: { marrow: { deathSave: true } },
   });
 
-  // The players are told a Death Save happened, and nothing else.
+  return null;
+}
+
+/**
+ * "Check the Body": the one moment XIII.2 lets the face-down result be looked at. Reveals it
+ * to everyone (whoever spent the turn checking would know, and would say), then runs
+ * whichever of the table's three outcomes it was.
+ */
+export async function checkTheBody(actor) {
+  const stored = actor.getFlag('marrow', 'deathSaveResult');
+  if (!stored) {
+    ui.notifications?.warn(game.i18n.localize('MARROW.Death.NothingToCheck'));
+    return;
+  }
+  await actor.unsetFlag('marrow', 'deathSaveResult');
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: await foundry.applications.handlebars.renderTemplate(
+      'systems/marrow/templates/chat/death.hbs',
+      { revealed: true, text: stored.text },
+    ),
+  });
+
+  const plain = String(stored.text).replace(/<[^>]+>/g, ' ').trim();
+  if (/dying/i.test(plain)) {
+    const rounds = (await new Roll('1d5').evaluate()).total;
+    await startDeathClock(actor, 'dying', rounds);
+  } else if (/^dead\b/i.test(plain)) {
+    await markDead(actor);
+  } else if (actor.system.health) {
+    // "Unconscious. You wake in 2d10 minutes. Reduce your Maximum Health by 1d5." -- the
+    // minutes are for the Warden to narrate; there is no in-Foundry clock for real time.
+    const n = (await new Roll('1d5').evaluate()).total;
+    await actor.update({ 'system.health.max': Math.max(1, actor.system.health.max - n) });
+    await announceEffects(actor, { applied: [`Maximum Health -${n}`] });
+  }
+}
+
+/**
+ * The clock behind both "Lethal ... a Death Save in 1d10 rounds" and the Death Save table's
+ * own "Unconscious and dying ... die in 1d5 rounds" -- the same countdown under two labels.
+ * Ticks once at the start of this actor's own combat turn (combatTurnChange, matching how
+ * Bleeding already ticks there) or by hand with the clock card's own button when there is no
+ * combat running to tick it.
+ */
+export async function startDeathClock(actor, kind, rounds) {
+  await actor.setFlag('marrow', 'deathClock', { kind, roundsLeft: rounds });
+  const line = kind === 'dying'
+    ? game.i18n.format('MARROW.Death.DyingClock', { name: actor.name, rounds })
+    : game.i18n.format('MARROW.Death.LethalClock', { name: actor.name, rounds });
+  return ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: await foundry.applications.handlebars.renderTemplate(
+      'systems/marrow/templates/chat/death-clock.hbs',
+      { line, actorUuid: actor.uuid },
+    ),
+  });
+}
+
+/** "Unless somebody stabilizes you first ... Stabilizing does not fix the injury. It only
+ * stops the clock." -- the injury (Bleeding, the stat loss, whatever the row also said)
+ * stays; only the countdown to the Death Save goes away. */
+export async function stabilizeDeathClock(actor) {
+  if (!actor.getFlag('marrow', 'deathClock')) return;
+  await actor.unsetFlag('marrow', 'deathClock');
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: `<div class="marrow chat-card death-pending">${
-      game.i18n.format('MARROW.Death.FaceDown', { name: actor.name })}</div>`,
+      game.i18n.format('MARROW.Death.Stabilized', { name: actor.name })}</div>`,
   });
+}
 
-  return result;
+/** One round off the clock. At zero: a Lethal clock leads to a Death Save; the Death Save
+ * table's own "dying" clock leads to death outright -- XIII.2 gives it no second Save. */
+export async function tickDeathClock(actor) {
+  const clock = actor.getFlag('marrow', 'deathClock');
+  if (!clock) return;
+  const roundsLeft = clock.roundsLeft - 1;
+  if (roundsLeft > 0) {
+    await actor.setFlag('marrow', 'deathClock', { ...clock, roundsLeft });
+    return;
+  }
+  await actor.unsetFlag('marrow', 'deathClock');
+  if (clock.kind === 'dying') await markDead(actor);
+  else await deathSave(actor);
+}
+
+async function markDead(actor) {
+  await addCondition(actor, game.i18n.localize('MARROW.Death.Dead'),
+    game.i18n.localize('MARROW.Death.DeadText'));
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<div class="marrow chat-card death-pending">${
+      game.i18n.format('MARROW.Death.DiedNote', { name: actor.name })}</div>`,
+  });
 }
 
 /**

@@ -1,5 +1,18 @@
-{{!-- XIII.2. Whispered to the Warden; the players get the face-down card instead. --}}
-<div class="marrow chat-card death">
-  <header class="card-head"><span class="what">{{localize 'MARROW.Death.Save'}}</span></header>
-  <div class="death-text">{{{text}}}</div>
+{{!--
+  XIII.2: the result sits face down until checkTheBody() reveals it -- not even the Warden
+  looks first. This template renders both halves of that: the face-down card with its Check
+  the Body button (no `text`), and the reveal itself once `revealed` is set.
+--}}
+<div class="marrow chat-card death{{#unless revealed}} death-pending{{/unless}}">
+  {{#if revealed}}
+    <header class="card-head"><span class="what">{{localize 'MARROW.Death.Save'}}</span></header>
+    <div class="death-text">{{{text}}}</div>
+  {{else}}
+    <p>{{line}}</p>
+    <div class="card-buttons">
+      <button type="button" data-action="checkTheBody" data-actor-uuid="{{actorUuid}}">
+        {{localize 'MARROW.Death.CheckTheBody'}}
+      </button>
+    </div>
+  {{/if}}
 </div>

@@ -213,7 +213,17 @@
     },
     "Death": {
       "Save": "Death Save",
-      "FaceDown": "{name}'s Death Save is face down on the table. It is revealed only when somebody spends a turn checking the body."
+      "FaceDown": "{name}'s Death Save is face down on the table. It is revealed only when somebody spends a turn checking the body.",
+      "CheckTheBody": "Check the Body",
+      "NothingToCheck": "There is no Death Save waiting to be checked.",
+      "LethalClock": "{name} is dying. Stabilize them -- a successful Field Medicine or Surgery check, a Working, or a hot iron and a Body Save -- within {rounds} rounds, or they make a Death Save.",
+      "DyingClock": "{name} is unconscious and dying. Without intervention, they die in {rounds} rounds.",
+      "Stabilize": "Stabilize",
+      "Stabilized": "{name} has been stabilized. The clock stops -- the injury itself is still there.",
+      "TickRound": "-1 Round",
+      "Dead": "Dead",
+      "DeadText": "This body will not be getting back up.",
+      "DiedNote": "{name} has died."
     },
     "Blight": {
       "Label": "Blight",

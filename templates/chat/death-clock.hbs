@@ -1,0 +1,17 @@
+{{!--
+  XIII: a Lethal Wound's "Death Save in 1d10 rounds unless stabilized", or the Death Save
+  table's own "dying ... 1d5 rounds" -- the same clock under two labels. Ticks automatically
+  at the start of this actor's own combat turn; the round button is for when there is no
+  combat running to do that.
+--}}
+<div class="marrow chat-card death-pending">
+  <p>{{line}}</p>
+  <div class="card-buttons">
+    <button type="button" data-action="stabilizeDeathClock" data-actor-uuid="{{actorUuid}}">
+      {{localize 'MARROW.Death.Stabilize'}}
+    </button>
+    <button type="button" data-action="tickDeathClock" data-actor-uuid="{{actorUuid}}">
+      {{localize 'MARROW.Death.TickRound'}}
+    </button>
+  </div>
+</div>

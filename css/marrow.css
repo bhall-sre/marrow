@@ -972,6 +972,7 @@
 .marrow.chat-card .card-buttons button {
   flex: 1;
   font-family: var(--font-display);
+  font-style: normal;
   font-size: .6rem;
   letter-spacing: .08em;
   text-transform: uppercase;
