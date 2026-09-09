@@ -231,9 +231,10 @@ export async function panicCheck(actor, { sources = [] } = {}) {
   if (!result.success) {
     const draw = await drawSystemTable(MARROW.tables.panic, actor);
     // XI.3: "Some Panic results leave a Condition, which is permanent until treated."
-    const { applyResultEffects } = await import('./effects.mjs');
+    const { applyResultEffects, announceEffects } = await import('./effects.mjs');
     const text = draw?.results?.[0]?.description ?? draw?.results?.[0]?.text ?? '';
-    await applyResultEffects(actor, text, { source: game.i18n.localize('MARROW.Roll.Panic') });
+    const effects = await applyResultEffects(actor, text, { source: game.i18n.localize('MARROW.Roll.Panic') });
+    await announceEffects(actor, effects);
   }
   return result;
 }

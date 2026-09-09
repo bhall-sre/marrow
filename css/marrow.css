@@ -960,6 +960,7 @@
 
 .marrow.chat-card.damage-applied .applied-line { font-weight: 600; }
 .marrow.chat-card.damage-applied .note { margin-top: 2px; font-size: .82rem; color: var(--ink-faint); }
+.marrow.chat-card.damage-applied .effects-list { margin: 4px 0 0; padding: 0; list-style: none; }
 .marrow.chat-card.damage-applied.undone .applied-line {
   font-style: italic;
   font-weight: 400;

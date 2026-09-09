@@ -148,18 +148,21 @@ export async function applyResultEffects(actor, text, { source = '', recordInjur
     ? plain : null;
 
   if (conditionText || lasting) {
-    await addCondition(actor, rowLabel(plain) ?? source ?? 'Condition', conditionText ?? lasting);
-    done.applied.push('Condition');
-  } else if (recordInjury && done.applied.length) {
-    // A row like "Hand or foot severed. Bleeding +4." already had its Bleeding tracked above;
-    // the injury itself is not a number and would otherwise vanish once that match consumed
-    // the row. Gated on something else already having applied, so a purely descriptive miss
-    // like "Rib broken." with no number attached at all is left as flavor in the chat log
-    // rather than every Wound minting a permanent Condition for it.
+    const name = rowLabel(plain) ?? source ?? 'Condition';
+    await addCondition(actor, name, conditionText ?? lasting);
+    done.applied.push(`Condition: ${name}`);
+  } else if (recordInjury) {
+    // XIII: a Wound is permanent by definition, so whatever description is left once the
+    // mechanical part is parsed out -- "Hand or foot severed", "Paralyzed from the waist
+    // down" -- becomes a Condition on its own, whether or not the row also carried a number.
+    // A wound with a number (bleeding, a stat hit) is not exempt from this either: "Flesh
+    // torn away" from "Minor. Flesh torn away. -1d10 Strength." needs its own Condition too,
+    // once the Strength part is stripped out.
     const injury = stripRecognized(plain);
     if (/[A-Za-z]{3,}/.test(injury)) {
-      await addCondition(actor, rowLabel(injury) ?? rowLabel(plain) ?? source ?? 'Condition', injury);
-      done.applied.push('Injury');
+      const name = rowLabel(injury) ?? rowLabel(plain) ?? source ?? 'Condition';
+      await addCondition(actor, name, injury);
+      done.applied.push(`Condition: ${name}`);
     }
   }
 
@@ -172,6 +175,20 @@ export async function applyResultEffects(actor, text, { source = '', recordInjur
   }
 
   return done;
+}
+
+/**
+ * Post what applyResultEffects actually did, so a Stat hit or a new Condition shows up in
+ * the chat log instead of only being visible by opening the sheet afterward -- the Wound or
+ * Panic table draw above this card shows the row's words, not what they changed.
+ */
+export async function announceEffects(actor, done) {
+  if (!done?.applied?.length) return null;
+  const html = await foundry.applications.handlebars.renderTemplate(
+    'systems/marrow/templates/chat/effects-applied.hbs',
+    { message: game.i18n.format('MARROW.EffectsApplied.Title', { name: actor.name }), notes: done.applied },
+  );
+  return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: html });
 }
 
 /* -------------------------------------------------------------------------- */

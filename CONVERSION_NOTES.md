@@ -79,9 +79,15 @@ Bleeding is applied when a Wound **result** says "Bleeding +N", and from nothing
 
 `module/dice/effects.mjs` reads each Wound and Panic result and does what it says — Bleeding,
 Minimum Stress, Stress gained or shed, Stats and Saves reduced, Maximum Health reduced,
-Conditions, and Death Saves. 54 of the 70 rows carry a recognised effect; the rest are pure
-description ("Rib broken"). Anything a row states that needs a Save or a ruling — "Body Save
-or entangled" — is surfaced on the card rather than applied.
+Conditions, and Death Saves. 54 of the 70 rows carry a recognised mechanical effect on top of
+that; the rest are pure description ("Rib broken"). A Wound's description becomes a Condition
+either way — "a Wound is permanent by definition" (XIII) does not stop applying just because
+the row had no number attached, so "Paralyzed from the waist down" gets recorded exactly like
+"Flesh torn away. -1d10 Strength" does, once the mechanical part is stripped out of the
+latter. What applied is also posted to chat as its own follow-up card, since a silent
+`actor.update` behind a Wound draw is otherwise invisible until someone opens the sheet.
+Anything a row states that needs a Save or a ruling — "Body Save or entangled" — is surfaced
+on the card rather than applied.
 
 ### 8. The Marks table rolls once per band, not once per point — *XVI.1, XVI.2*
 

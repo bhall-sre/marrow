@@ -48,6 +48,9 @@
       "UndoneNote": "Undone -- {name} is back where this started.",
       "UndoMissingActor": "That actor no longer exists. Nothing to undo."
     },
+    "EffectsApplied": {
+      "Title": "Applied to {name}:"
+    },
     "Undo": "Undo",
     "Healing": "Healing",
     "Bleeding": "Bleeding",

@@ -1,6 +1,6 @@
 import { MARROW } from '../config.mjs';
 import { MarrowCheck, drawSystemTable, resolveTable, applyConsequences } from './check.mjs';
-import { applyResultEffects } from './effects.mjs';
+import { applyResultEffects, announceEffects } from './effects.mjs';
 import { DISADVANTAGE } from './roll.mjs';
 
 /**
@@ -128,6 +128,7 @@ export async function takeWound(actor, damageType, outcome = {}) {
   const text = draw?.results?.[0]?.description ?? draw?.results?.[0]?.text ?? '';
   const effects = await applyResultEffects(actor, text, { source: tableName, recordInjury: true });
   outcome.effects = effects;
+  await announceEffects(actor, effects);
 
   if (next >= wounds.max || effects.deathSave) {
     outcome.deathSave = true;

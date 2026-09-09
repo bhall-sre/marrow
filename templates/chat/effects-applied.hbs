@@ -1,0 +1,13 @@
+{{!--
+  What a Wound or Panic table row actually did, once applyResultEffects has read it -- a
+  stat hit, a Condition, Bleeding -- since the draw above this card only shows the row's
+  text, not what changed on the sheet because of it.
+--}}
+<div class="marrow chat-card damage-applied">
+  <p class="applied-line">{{message}}</p>
+  <ul class="effects-list">
+    {{#each notes as |n|}}
+      <li class="note">{{n}}</li>
+    {{/each}}
+  </ul>
+</div>

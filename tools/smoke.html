@@ -367,6 +367,38 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
       }
     }
   }
+
+  head('11. A numberless Wound row still becomes a Condition');
+  /*
+    "Major. Paralyzed from the waist down." carries no Bleeding, Stress, Stat or Health
+    number for applyResultEffects to recognise -- the row's ENTIRE content is the injury's
+    description. The old code only minted a Condition for that leftover description when
+    something else on the same row had already applied (a stat hit, Bleeding...), on the
+    theory that a bare description with nothing else going on was flavor, not a real injury.
+    That reasoning does not survive contact with "Paralyzed from the waist down": nothing
+    about it is optional flavor, and the row's own docstring already promised otherwise
+    ("any description left over ... gets its own Condition even with no number attached").
+    This reproduces the exact two-row draw a Wound roll of 2 produces, the way the reported
+    bug did, and fails if only one of the two Conditions gets created.
+  */
+  const { applyResultEffects: testApplyResultEffects } = await import(`../module/dice/effects.mjs?t=${Date.now()}`);
+  const created = [];
+  const fakeActor = {
+    system: { stats: { strength: { value: 20 } }, saves: {} },
+    items: { find: () => null },
+    async update() {},
+    async createEmbeddedDocuments(type, docs) { created.push(...docs); return docs; },
+  };
+  await testApplyResultEffects(fakeActor, 'Major. Paralyzed from the waist down.',
+    { source: 'Wounds: Gore & Massive', recordInjury: true });
+  await testApplyResultEffects(fakeActor, 'Minor. Flesh torn away. -1d10 Strength.',
+    { source: 'Wounds: Gore & Massive', recordInjury: true });
+  const names = created.map((c) => c.name);
+  if (names.length === 2 && names.some((n) => /Paralyzed/i.test(n)) && names.some((n) => /Flesh/i.test(n))) {
+    log('ok', `ok - both Wounds became Conditions: ${names.join(', ')}`);
+  } else {
+    log('bad', `expected 2 Conditions (Paralyzed + Flesh Torn Away), got: ${names.join(', ') || '(none)'}`);
+  }
 })();
 </script>
 <script>
@@ -381,7 +413,8 @@ const TEMPLATES = [
   'templates/item/header.hbs', 'templates/item/body.hbs',
   'templates/chat/check.hbs', 'templates/chat/panic.hbs', 'templates/chat/damage.hbs',
   'templates/chat/healing.hbs',
-  'templates/chat/damage-applied.hbs', 'templates/chat/death.hbs', 'templates/chat/item.hbs',
+  'templates/chat/damage-applied.hbs', 'templates/chat/effects-applied.hbs',
+  'templates/chat/death.hbs', 'templates/chat/item.hbs',
   'templates/dialog/check.hbs', 'templates/dialog/class-choice.hbs',
   'templates/dialog/creation.hbs',
 ];
