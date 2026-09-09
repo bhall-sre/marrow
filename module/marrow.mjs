@@ -40,14 +40,25 @@ Hooks.once('init', () => {
   // not a choice they are making) for whoever's own character is clicking.
   CONFIG.TextEditor.enrichers.push({
     pattern: /@Check\[(\w+)(?:\|fail:([^\]]+))?\]\{([^}]+)\}/g,
+    // Foundry's own enrichment pipeline does not isolate one enricher's failure from the
+    // rest of the document being enriched -- an uncaught throw here does not just leave this
+    // one `@Check[]` unlinked, it can cost the whole field (a Wound row, an actor's entire
+    // Notes tab) its render. Every documented custom enricher (dnd5e's own included) follows
+    // the same rule for the same reason: never let this throw. Falling back to the label
+    // alone, as plain text, is what "no dice icon, no click, but the words survive" looks like.
     enricher: async (match) => {
-      const [, key, failCondition, label] = match;
-      const a = document.createElement('a');
-      a.className = 'marrow-check-link';
-      a.dataset.key = key;
-      if (failCondition) a.dataset.failCondition = failCondition;
-      a.innerHTML = `<i class="fa-solid fa-dice-d10"></i> ${label}`;
-      return a;
+      try {
+        const [, key, failCondition, label] = match;
+        const a = document.createElement('a');
+        a.className = 'marrow-check-link';
+        a.dataset.key = key;
+        if (failCondition) a.dataset.failCondition = failCondition;
+        a.innerHTML = `<i class="fa-solid fa-dice-d10"></i> ${label}`;
+        return a;
+      } catch (err) {
+        console.error('MARROW | @Check[] enricher failed', err);
+        return document.createTextNode(match[3] ?? match[0]);
+      }
     },
   });
 

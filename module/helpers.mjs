@@ -8,6 +8,24 @@ import { MARROW } from './config.mjs';
  * supplies `eq` or `concat`, these are equivalent and the templates behave the same either
  * way. The MARROW-specific ones (`scaled`, `armorLine`, `pad2`) have no core equivalent.
  */
+/**
+ * TextEditor.enrichHTML, but a bad match can never blank the whole field. `@Check[]` (or any
+ * future custom enricher) throwing on one document's text should not cost that document its
+ * entire Notes or Biography tab -- every enricher's own upstream examples (dnd5e's own
+ * enrichers.mjs, for one) are explicit that a custom enricher must never let an exception
+ * escape for exactly this reason, but nothing stopped the SHEET's own call to enrichHTML from
+ * doing it anyway if one did. Falls back to the raw text, so the words are still there even
+ * unlinked, rather than nothing at all.
+ */
+export async function safeEnrich(text, options) {
+  try {
+    return await foundry.applications.ux.TextEditor.implementation.enrichHTML(text, options);
+  } catch (err) {
+    console.error('MARROW | enrichHTML failed, showing raw text instead', err);
+    return text ?? '';
+  }
+}
+
 export function registerHelpers() {
   const H = Handlebars;
 

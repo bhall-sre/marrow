@@ -1,5 +1,6 @@
 import { MarrowActorSheet } from './actor-sheet.mjs';
 import { MARROW } from '../config.mjs';
+import { safeEnrich } from '../helpers.mjs';
 
 /**
  * The character sheet.
@@ -54,10 +55,8 @@ export class MarrowCharacterSheet extends MarrowActorSheet {
 
     context.armorKindLabel = MARROW.armorKinds[s.armor.kind]?.label ?? '';
 
-    context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation
-      .enrichHTML(s.biography, { relativeTo: this.document });
-    context.enrichedNotes = await foundry.applications.ux.TextEditor.implementation
-      .enrichHTML(s.notes, { relativeTo: this.document });
+    context.enrichedBiography = await safeEnrich(s.biography, { relativeTo: this.document });
+    context.enrichedNotes = await safeEnrich(s.notes, { relativeTo: this.document });
 
     return context;
   }

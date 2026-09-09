@@ -171,6 +171,18 @@ This is a rebuild, not a port, so a few things that existed before are gone on p
     specific Master, whose own listed prerequisites are the only Expert choices, whose own
     prerequisites are the only Trained choices. `#scholarChain` in `creation.mjs` walks that
     chain instead of counting against a table.
+- **A bad `@Check[]` match can no longer blank an entire Notes or Biography tab.** Reported
+  after Abara's and the Brood's Notes AND Biography both rendered completely empty on a live
+  server, despite the packed compendium data having full text in both -- the one thing those
+  two actors have that no other actor in the module does is a `@Check[...]` link in their
+  Notes. Foundry's own `enrichHTML` does not appear to isolate one custom enricher's failure
+  from the rest of the field being enriched: an uncaught exception can cost the whole call,
+  not just its own matched substring, which is exactly why every documented custom enricher
+  (dnd5e's own included) is written to never let one escape. `safeEnrich` (`helpers.mjs`) now
+  wraps every sheet's own call to `enrichHTML`, falling back to the raw, unlinked text rather
+  than nothing; the `@Check[]` enricher itself (`marrow.mjs`) also catches internally and
+  falls back to its plain label, since a chat message's own auto-enrichment is a call this
+  system does not make and so cannot wrap from the outside.
 - **A Death Save is genuinely face down, even from the Warden.** XIII.2 says the Warden
   "sets it face down on the table without looking," and the original build did not honor
   that half of the sentence -- the roll was made and immediately whispered to the GM, just

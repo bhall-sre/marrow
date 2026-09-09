@@ -1,4 +1,5 @@
 import { MarrowActorSheet } from './actor-sheet.mjs';
+import { safeEnrich } from '../helpers.mjs';
 
 /**
  * The Retainer sheet (XX).
@@ -41,10 +42,8 @@ export class MarrowCompanionSheet extends MarrowActorSheet {
     // say whether this particular ask is in conflict with it.
     context.hasMotivation = !!s.motivation?.trim();
 
-    context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation
-      .enrichHTML(s.biography, { relativeTo: this.document });
-    context.enrichedNotes = await foundry.applications.ux.TextEditor.implementation
-      .enrichHTML(s.notes, { relativeTo: this.document });
+    context.enrichedBiography = await safeEnrich(s.biography, { relativeTo: this.document });
+    context.enrichedNotes = await safeEnrich(s.notes, { relativeTo: this.document });
 
     return context;
   }

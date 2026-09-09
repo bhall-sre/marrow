@@ -1,4 +1,5 @@
 import { MARROW } from '../config.mjs';
+import { safeEnrich } from '../helpers.mjs';
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ItemSheetV2 } = foundry.applications.sheets;
@@ -41,8 +42,7 @@ export class MarrowItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
           .map(t => [t, item.type === t]),
       ),
       matchup: item.matchupSummary,
-      enrichedDescription: await foundry.applications.ux.TextEditor.implementation
-        .enrichHTML(item.displayDescription, { relativeTo: item }),
+      enrichedDescription: await safeEnrich(item.displayDescription, { relativeTo: item }),
     });
 
     // XVII.2: show a Working's formula with the owner's current Blight substituted in, so
@@ -54,8 +54,7 @@ export class MarrowItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     }
 
     if (item.type === 'class') {
-      context.enrichedTrauma = await foundry.applications.ux.TextEditor.implementation
-        .enrichHTML(item.system.traumaResponse, { relativeTo: item });
+      context.enrichedTrauma = await safeEnrich(item.system.traumaResponse, { relativeTo: item });
     }
 
     return context;

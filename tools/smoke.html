@@ -444,6 +444,31 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
       + `${JSON.stringify(dying.getFlag('marrow', 'deathClock'))} conditions=`
       + `${dying._conditions.map((c) => c.name).join(', ') || '(none)'}`);
   }
+
+  head('13. A throwing enricher cannot blank a whole Notes tab');
+  /*
+    Reported bug: Abara's and Brood's Notes AND Biography both render as completely empty on
+    a live server, even though the packed compendium data has full text in both fields --
+    the one thing those two actors' notes have in common that no other actor's does is a
+    `@Check[...]` link. Every documented custom enricher (dnd5e's own included) is explicit
+    that an enricher must never let an exception escape, because Foundry's enrichHTML does
+    not appear to isolate one enricher's failure from the rest of the field being enriched --
+    a single bad match can cost the WHOLE call, not just its own substring. This forces that
+    exact failure (a TextEditor.implementation.enrichHTML that throws) through safeEnrich and
+    confirms the raw text still comes back rather than the field going silently blank.
+  */
+  const { safeEnrich } = await import(`../module/helpers.mjs?t=${Date.now()}`);
+  const realEnrichHTML = foundry.applications.ux.TextEditor.implementation.enrichHTML;
+  foundry.applications.ux.TextEditor.implementation.enrichHTML = async () => {
+    throw new Error('simulated: a custom enricher threw while matching this text');
+  };
+  const fallback = await safeEnrich('The Keening. If it sings: @Check[...]{Sanity Save}.');
+  foundry.applications.ux.TextEditor.implementation.enrichHTML = realEnrichHTML;
+  if (fallback && fallback.includes('The Keening')) {
+    log('ok', 'ok - enrichHTML throwing falls back to the raw text, not a blank field');
+  } else {
+    log('bad', `expected the raw text back, got ${JSON.stringify(fallback)}`);
+  }
 })();
 </script>
 <script>
