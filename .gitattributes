@@ -1,0 +1,6 @@
+# Compendium packs are LevelDB. CURRENT ends in a single 0x0a and the .log files are framed
+# binary records with CRC32C over their own bytes. With core.autocrlf=true and no rule here,
+# a fresh clone writes CURRENT as "MANIFEST-000002\r\n", LevelDB never finds the manifest,
+# and every pack opens EMPTY in Foundry with no error -- the exact failure the notes already
+# warn about, arriving by a route that has nothing to do with how the pack was built.
+packs/** binary
