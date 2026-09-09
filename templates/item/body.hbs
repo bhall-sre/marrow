@@ -1,5 +1,14 @@
 <section class="sheet-body item-body">
 
+{{#if (isHiddenMystery item)}}
+  {{!-- Everything mechanical is exactly what identifying the thing would tell you, so none
+        of it is here until it is identified: a locked casket that is Ice Storm, not the
+        vitriol that eats through it, is a very small clue for a bad reason. --}}
+  <p class="notice mystery-notice">{{localize 'MARROW.UnidentifiedNotice'}}</p>
+{{/if}}
+
+{{#unless (isHiddenMystery item)}}
+
 {{#if is.skill}}
   {{!-- III. --}}
   <div class="fields">
@@ -224,5 +233,40 @@
 <h3>{{localize 'MARROW.Description'}}</h3>
 <prose-mirror name="system.description" value="{{system.description}}"
               toggled="true" data-enriched="{{enrichedDescription}}"></prose-mirror>
+
+{{/unless}}
+
+{{#if (isHiddenMystery item)}}
+  <h3>{{localize 'MARROW.Description'}}</h3>
+  {{!-- Read-only: enrichedDescription is already the cover story (item.displayDescription
+        resolved it), and there is no field here called "unidentifiedDescription" for
+        submitOnChange to clobber if someone were to edit this. --}}
+  <div class="mystery-description">{{{enrichedDescription}}}</div>
+{{/if}}
+
+{{#if (isGM)}}
+  {{#unless is.working}}
+    {{!-- A Working is a player's own ability, never a mystery -- it has no fields here to
+          show. Every other type does. Kept together so setting one up is one scroll rather
+          than a hunt. system.identified doubles as both "is this currently a mystery" and
+          the Warden's own undo -- flip it back off after an early reveal and the cover
+          story returns instead of vanishing. --}}
+    <div class="identification">
+      <h3>{{localize 'MARROW.Identification'}}</h3>
+      <label class="check">
+        <input type="checkbox" name="system.identified" {{checked system.identified}} />
+        <span>{{localize 'MARROW.Identified'}}</span>
+      </label>
+      <label class="field wide">
+        <span>{{localize 'MARROW.UnidentifiedName'}}</span>
+        <input type="text" name="system.unidentifiedName" value="{{system.unidentifiedName}}"
+               placeholder="{{localize 'MARROW.UnidentifiedNamePlaceholder'}}" />
+      </label>
+      <h4>{{localize 'MARROW.UnidentifiedDescription'}}</h4>
+      <prose-mirror name="system.unidentifiedDescription" value="{{system.unidentifiedDescription}}"
+                    toggled="true"></prose-mirror>
+    </div>
+  {{/unless}}
+{{/if}}
 
 </section>

@@ -42,7 +42,7 @@ export class MarrowItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       ),
       matchup: item.matchupSummary,
       enrichedDescription: await foundry.applications.ux.TextEditor.implementation
-        .enrichHTML(item.system.description, { relativeTo: item }),
+        .enrichHTML(item.displayDescription, { relativeTo: item }),
     });
 
     // XVII.2: show a Working's formula with the owner's current Blight substituted in, so

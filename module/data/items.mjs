@@ -2,10 +2,18 @@ import { MARROW } from '../config.mjs';
 
 const fields = foundry.data.fields;
 
-/** Fields every item carries. */
+/**
+ * Fields every item carries, including identification. A sword is a sword: `identified`
+ * defaults true, so nothing has to opt in to being known. Only content the Warden
+ * deliberately authors as a mystery -- an unlabeled flask, a stone that does something
+ * nobody has explained yet -- sets it false and supplies what a player sees instead.
+ */
 const describable = () => ({
   description: new fields.HTMLField(),
   cost: new fields.NumberField({ required: true, integer: true, initial: 0, min: 0 }),
+  identified: new fields.BooleanField({ initial: true }),
+  unidentifiedName: new fields.StringField(),
+  unidentifiedDescription: new fields.HTMLField(),
 });
 
 /* -------------------------------------------------------------------------- */
@@ -215,6 +223,12 @@ export class ConditionData extends foundry.abstract.TypeDataModel {
       bleeding: new fields.NumberField({ required: true, integer: true, initial: 0, min: 0 }),
       // XI.3: "permanent until treated"
       permanent: new fields.BooleanField({ initial: true }),
+      // A Condition applied from an unknown cause is symptoms first, diagnosis later -- the
+      // Keening reads as nothing but its own symptoms until someone identifies it. Most
+      // Conditions (Bleeding, a fine scar) are exactly what they say and stay identified.
+      identified: new fields.BooleanField({ initial: true }),
+      unidentifiedName: new fields.StringField(),
+      unidentifiedDescription: new fields.HTMLField(),
     };
   }
 }

@@ -1,7 +1,14 @@
 <header class="marrow-header item-header">
-  <img class="portrait" src="{{item.img}}" data-edit="img" alt="{{item.name}}" data-action="editImage" />
+  <img class="portrait" src="{{item.img}}" data-edit="img" alt="{{item.displayName}}" data-action="editImage" />
   <div class="identity">
-    <input class="name" type="text" name="name" value="{{item.name}}" />
+    {{#if (isHiddenMystery item)}}
+      {{!-- Not a form field: submitOnChange serializes every input in the sheet, and a
+            "name" input showing the cover name would silently overwrite the real one the
+            moment anything else on the sheet changed. --}}
+      <div class="name mystery-name">{{item.displayName}}</div>
+    {{else}}
+      <input class="name" type="text" name="name" value="{{item.name}}" />
+    {{/if}}
     <div class="type-line">{{localize (concat 'TYPES.Item.' item.type)}}</div>
   </div>
 </header>

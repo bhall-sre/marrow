@@ -592,6 +592,13 @@
   border-left-color: var(--blood);
 }
 
+/* Identification -- a mystery item's cover name, wherever it is shown. */
+.marrow .item-row.mystery .item-name { font-style: italic; color: var(--ink-faint); }
+.marrow .mystery-name { font-style: italic; color: var(--ink-faint); padding: 4px 0; }
+.marrow .mystery-description { font-style: italic; }
+.marrow .identification { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--parchment-deep); }
+.marrow.chat-card.item-card.mystery .what { font-style: italic; }
+
 .marrow .ladder-note {
   margin-top: 12px;
   font-size: .8rem;
@@ -1361,3 +1368,34 @@
 }
 
 .marrow .effective-ap { font-family: var(--font-display); font-size: 1.1rem; }
+
+/* --------------------------------------------------------------------------
+   The @Check[] enricher -- a clickable Save wherever it appears: a chat card's
+   rider-note, an actor's notes, a Condition's own description. Deliberately not
+   scoped under .marrow: this text can end up on a journal page, which carries none
+   of the custom properties above, so real fallback colors are given here instead of
+   inheriting them.
+   -------------------------------------------------------------------------- */
+
+a.marrow-check-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: .85em;
+  font-style: normal;
+  text-decoration: none;
+  color: var(--ink, #1c1713);
+  background: var(--brass-wash, rgba(138, 111, 60, .18));
+  border: 1px solid var(--brass, #8a6f3c);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+a.marrow-check-link:hover {
+  background: var(--brass, #8a6f3c);
+  color: var(--parchment, #f2e8d5);
+}
+
+a.marrow-check-link i { font-size: .9em; }

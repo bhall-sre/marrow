@@ -1,8 +1,8 @@
-<div class="marrow chat-card item-card">
+<div class="marrow chat-card item-card{{#if mystery}} mystery{{/if}}">
   <header class="card-head">
-    <img src="{{item.img}}" alt="{{item.name}}" />
-    <span class="what">{{item.name}}</span>
+    <img src="{{item.img}}" alt="{{name}}" />
+    <span class="what">{{name}}</span>
   </header>
   {{#if formula}}<div class="formula">{{formula}}</div>{{/if}}
-  <div class="description">{{{item.system.description}}}</div>
+  <div class="description">{{{description}}}</div>
 </div>

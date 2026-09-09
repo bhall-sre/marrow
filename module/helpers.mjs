@@ -14,6 +14,19 @@ export function registerHelpers() {
   H.registerHelper('eq', (a, b) => a === b);
   H.registerHelper('gt', (a, b) => Number(a) > Number(b));
 
+  /**
+   * Whether an unidentified item's reveal button belongs in the DOM. A helper rather than a
+   * context property: item-row.hbs is invoked from inside {{#each}} loops at several
+   * different nesting depths across four sheet templates, and a value handed down through
+   * context would need a different number of `../` at every call site to still be reachable.
+   * game.user is always there to ask, so nothing needs to be threaded through at all.
+   */
+  H.registerHelper('isGM', () => game.user.isGM);
+
+  /** Whether an item's real mechanical detail should stay off the row -- true only for a
+      mystery item, and only for someone who is not the Warden. */
+  H.registerHelper('isHiddenMystery', (item) => !!item?.isMystery && !game.user.isGM);
+
   /** Foundry core supplies `checked` for checkboxes/radios but nothing for `<option>`. */
   H.registerHelper('selected', (v) => (v ? 'selected' : ''));
 

@@ -31,6 +31,23 @@ Hooks.once('init', () => {
     { id: 'marrow-condition', name: 'MARROW.ConditionStatus', img: 'icons/svg/daze.svg' },
   );
 
+  // `@Check[key]{Label}` and `@Check[key|fail:Condition Name]{Label}`, anywhere Foundry
+  // enriches text: a chat card, an actor's notes, a Condition's own description. Clicking
+  // it rolls the Check directly (no dialog -- this is something happening TO the reader,
+  // not a choice they are making) for whoever's own character is clicking.
+  CONFIG.TextEditor.enrichers.push({
+    pattern: /@Check\[(\w+)(?:\|fail:([^\]]+))?\]\{([^}]+)\}/g,
+    enricher: async (match) => {
+      const [, key, failCondition, label] = match;
+      const a = document.createElement('a');
+      a.className = 'marrow-check-link';
+      a.dataset.key = key;
+      if (failCondition) a.dataset.failCondition = failCondition;
+      a.innerHTML = `<i class="fa-solid fa-dice-d10"></i> ${label}`;
+      return a;
+    },
+  });
+
   CONFIG.Actor.documentClass = MarrowActor;
   CONFIG.Item.documentClass = MarrowItem;
 
@@ -226,6 +243,59 @@ Hooks.on('combatTurnChange', async (combat, prior, current) => {
   await actor.tickBleeding();
 });
 
+/**
+ * Resolve who clicked: their own assigned character first, falling back to a token they
+ * have selected. Not the message's speaker -- the Keening's card is posted by the carcinid
+ * that sang it, but it is the reader's own Sanity Save.
+ */
+function actingActor() {
+  return game.user.character ?? canvas.tokens?.controlled.find(t => t.actor)?.actor ?? null;
+}
+
+/**
+ * A Condition applied by name rather than by reference, so `@Check[...|fail:Name]` can
+ * point at whatever the Warden already built -- a world item, or one sitting in any Item
+ * compendium -- without the system needing to know which. Skips it if the actor already
+ * has one by that name rather than stacking duplicates.
+ */
+async function applyConditionByName(actor, name) {
+  if (actor.items.some(i => i.type === 'condition' && i.name === name)) return null;
+
+  let template = game.items?.find(i => i.type === 'condition' && i.name === name) ?? null;
+  for (const pack of game.packs) {
+    if (template || pack.documentName !== 'Item') continue;
+    await pack.getIndex();
+    const entry = pack.index.find(e => e.name === name && (!e.type || e.type === 'condition'));
+    if (entry) template = await pack.getDocument(entry._id);
+  }
+  if (!template) {
+    ui.notifications?.warn(game.i18n.format('MARROW.Table.Missing', { name }));
+    return null;
+  }
+  return actor.createEmbeddedDocuments('Item', [template.toObject()]);
+}
+
+async function onCheckLinkClick(event) {
+  const link = event.target.closest('.marrow-check-link');
+  if (!link) return;
+  event.preventDefault();
+
+  const actor = actingActor();
+  if (!actor) {
+    ui.notifications?.warn(game.i18n.localize('MARROW.NoActorToRoll'));
+    return;
+  }
+
+  const result = await actor.rollCheck(link.dataset.key);
+  if (!result.success && link.dataset.failCondition) {
+    await applyConditionByName(actor, link.dataset.failCondition);
+  }
+}
+
 Hooks.once('ready', () => {
   console.log(`MARROW | ${game.system.version} ready.`);
+  // Delegated once on the document rather than per-message: @Check[] can land in a chat
+  // card, an actor's notes, or a journal page, and re-binding a listener every place
+  // enriched text gets inserted would mean finding every one of those places twice.
+  document.body.addEventListener('click', onCheckLinkClick);
 });

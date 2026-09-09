@@ -8,6 +8,25 @@ import { MARROW } from '../config.mjs';
  * where nearly all of this file goes.
  */
 export class MarrowItem extends Item {
+  /** Whether this item is a mystery to anyone who is not the Warden. */
+  get isMystery() {
+    return this.system.identified === false;
+  }
+
+  /**
+   * What a player sees instead of the real name, until it is identified. The GM always
+   * sees the real thing -- there is nothing to hide from the person running the mystery.
+   */
+  get displayName() {
+    if (!this.isMystery || game.user.isGM) return this.name;
+    return this.system.unidentifiedName || game.i18n.localize('MARROW.Unidentified');
+  }
+
+  get displayDescription() {
+    if (!this.isMystery || game.user.isGM) return this.system.description ?? '';
+    return this.system.unidentifiedDescription ?? '';
+  }
+
   /** What clicking an item's name in the sheet does. */
   async roll() {
     switch (this.type) {
@@ -35,6 +54,9 @@ export class MarrowItem extends Item {
       'systems/marrow/templates/chat/item.hbs',
       {
         item: this,
+        name: this.displayName,
+        description: this.displayDescription,
+        mystery: this.isMystery && !game.user.isGM,
         // XVII.2: `{B}` in a Working's formula is the caster's Blight Level.
         formula: this.type === 'working'
           ? this.system.scaled(this.actor?.system.blight?.value ?? 0)

@@ -24,6 +24,7 @@ export class MarrowActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       deleteItem: MarrowActorSheet.#onDeleteItem,
       createItem: MarrowActorSheet.#onCreateItem,
       toggleEquipped: MarrowActorSheet.#onToggleEquipped,
+      identifyItem: MarrowActorSheet.#onIdentifyItem,
       rest: MarrowActorSheet.#onRest,
       panic: MarrowActorSheet.#onPanic,
       blightExposure: MarrowActorSheet.#onBlightExposure,
@@ -143,6 +144,13 @@ export class MarrowActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const item = this.#item(target);
     if (!item) return;
     return item.update({ 'system.equipped': !item.system.equipped });
+  }
+
+  /** The Warden's one-click reveal, without opening the item's own sheet for it. */
+  static async #onIdentifyItem(event, target) {
+    const item = this.#item(target);
+    if (!item) return;
+    return item.update({ 'system.identified': true });
   }
 
   /** XI.1 */

@@ -97,6 +97,38 @@ roll Marks again.
 
 This is a rebuild, not a port, so a few things that existed before are gone on purpose:
 
+- **Identification.** Not in `MARROW.md` at all; by request. Every Item type but Working
+  carries `identified` (default `true`), `unidentifiedName`, and `unidentifiedDescription`.
+  A sword is a sword and needs nothing set; a mystery potion, an unlabeled flask, or a
+  Condition applied from an unexplained cause sets `identified: false` and supplies a cover
+  name and description. `MarrowItem#displayName`/`#displayDescription` resolve which one a
+  given viewer sees -- the Warden always sees the real thing, since there is nothing to hide
+  from the person running the mystery. The GM-only reveal button lives on the item row
+  (`identifyItem` on `MarrowActorSheet`) for the common case of ending a mystery mid-session,
+  and the full authoring fields (the checkbox, the cover name, the cover description) live on
+  the item sheet itself, under Identification, for setting one up. Working is excluded: a
+  Working is a player's own ability, never a mystery to them.
+
+  The swap happens in the template layer (`isHiddenMystery` in `helpers.mjs`), not by
+  editing what `Item#name` returns -- overriding the real document name would have been
+  simpler to render but would have broken anything in the codebase that compares by name
+  (`grantedSkills`, `castWorking`'s `working.name === 'RUIN'`, `findConditionSource`'s
+  lookups), and would have meant the GM's own `item.name` lied to them too. The real name is
+  always the real name; only what a template chooses to print changes.
+
+- **`@Check[key]{Label}` and `@Check[key|fail:Condition Name]{Label}`.** Also not in
+  `MARROW.md`; also by request. A TextEditor enricher (`marrow.mjs`) turns that markup into
+  a clickable Save wherever Foundry enriches text -- a chat card's rider-note, an actor's
+  notes, a Condition's own description, even a journal page. Clicking it rolls the Check
+  directly for whoever clicked (`game.user.character`, falling back to a selected token's
+  actor) with no dialog, since this is a Save something is putting on the reader, not an
+  action they are choosing to take. `|fail:Name` applies a Condition by that name on a
+  failure, sourced from the first match found among world items and every Item compendium,
+  and skipped if the actor already holds one by that name rather than stacking duplicates.
+  This is how a monster ability like the Keening (Silence at Greta Outpost) gets to roll
+  itself and hand out its own aftermath, without the system needing to know what a "Keening"
+  is.
+
 - **No XP, Rank, Level, or Resolve.** None of them appear in `MARROW.md`.
 - **Retainers are the `companion` Actor type**, but labelled **"Companion"** everywhere the
   player reads it — by explicit request, overriding `MARROW.md` XX's own word ("Retainer").

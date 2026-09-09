@@ -1,13 +1,21 @@
-{{!-- One line of an item list. `detail` is whatever that section wants shown on the right. --}}
-<li class="item-row" data-item-id="{{item.id}}" data-drag="true">
-  <img class="item-icon" src="{{item.img}}" alt="{{item.name}}" />
-  <button type="button" class="item-name rollable" data-action="rollItem">{{item.name}}</button>
-  <span class="item-detail">{{{detail}}}</span>
+{{!-- One line of an item list. `detail` is whatever that section wants shown on the right.
+      A mystery item shows its cover name to anyone but the Warden, and only the Warden gets
+      the button that ends the mystery. --}}
+<li class="item-row{{#if (isHiddenMystery item)}} mystery{{/if}}" data-item-id="{{item.id}}" data-drag="true">
+  <img class="item-icon" src="{{item.img}}" alt="{{item.displayName}}" />
+  <button type="button" class="item-name rollable" data-action="rollItem">{{item.displayName}}</button>
+  <span class="item-detail">{{#unless (isHiddenMystery item)}}{{{detail}}}{{/unless}}</span>
   <span class="item-controls">
     {{#if equippable}}
       <button type="button" data-action="toggleEquipped"
               class="equip{{#if item.system.equipped}} on{{/if}}"
               data-tooltip="{{localize 'MARROW.Equip'}}"><i class="fa-solid fa-shield-halved"></i></button>
+    {{/if}}
+    {{#if (isGM)}}
+      {{#if item.isMystery}}
+        <button type="button" data-action="identifyItem" data-tooltip="{{localize 'MARROW.IdentifyHint'}}">
+          <i class="fa-solid fa-magnifying-glass"></i></button>
+      {{/if}}
     {{/if}}
     <button type="button" data-action="editItem" data-tooltip="{{localize 'MARROW.Edit'}}">
       <i class="fa-solid fa-pen-to-square"></i></button>

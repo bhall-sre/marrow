@@ -93,7 +93,10 @@ globalThis.Actor = class { static implementation = class {}; };
 globalThis.Item = class { static implementation = class {}; };
 globalThis.Roll = class { constructor() {} async evaluate() { return this; } get total() { return 1; } };
 globalThis.ChatMessage = class { static getSpeaker() { return {}; } static create() {} };
-globalThis.CONFIG = { Actor: {}, Item: {}, controlIcons: {}, statusEffects: [], MARROW: null };
+globalThis.CONFIG = {
+  Actor: {}, Item: {}, controlIcons: {}, statusEffects: [], MARROW: null,
+  TextEditor: { enrichers: [] },
+};
 globalThis.ui = { notifications: { warn: () => {} } };
 globalThis.game = {
   i18n: { localize: (k) => k, format: (k) => k },
@@ -320,6 +323,48 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
       }
     } catch (err) {
       log('bad', `${type}: opening a Check threw\n  ${err.message}`);
+    }
+  }
+
+  head('10. Render the Item sheet, identified and as a mystery');
+  /*
+    Identification added two new helpers (isGM, isHiddenMystery) to header.hbs and body.hbs,
+    and neither template had ever been rendered with real context before -- only compiled,
+    which proves the syntax and nothing else. Step 5 would not have caught a missing helper
+    any more than it caught check.hbs's missing `selected` the first time.
+  */
+  const ITEM_CASES = {
+    'an identified weapon': {
+      name: 'Test Sword', img: 'x.svg', type: 'weapon', isMystery: false,
+      displayName: 'Test Sword', displayDescription: '<p>A sword.</p>',
+      system: { identified: true, damage: '1d10', damageTypeLabel: 'Bleeding', rangeLabel: 'Adjacent',
+                cost: 10, ammo: { value: 0, max: 0 }, antiArmor: false, reload: false,
+                heavy: false, reach: false, twoHanded: false, description: '<p>A sword.</p>' },
+    },
+    'an unidentified potion': {
+      name: 'Oil of Vitriol', img: 'x.svg', type: 'gear', isMystery: true,
+      displayName: 'Flask of Liquid', displayDescription: '<p>A sealed flask.</p>',
+      system: { identified: false, unidentifiedName: 'Flask of Liquid',
+                unidentifiedDescription: '<p>A sealed flask.</p>', quantity: 1, cost: 0,
+                category: 'gear', description: '<p>Eats through metal, stone, and flesh.</p>' },
+    },
+  };
+
+  for (const [label, item] of Object.entries(ITEM_CASES)) {
+    const ctx = {
+      item, system: item.system,
+      is: Object.fromEntries(['skill', 'weapon', 'armor', 'gear', 'class', 'working', 'condition']
+        .map(t => [t, item.type === t])),
+      matchup: null, enrichedDescription: item.displayDescription,
+    };
+    for (const path of ['templates/item/header.hbs', 'templates/item/body.hbs']) {
+      try {
+        const text = await (await fetch(`../${path}?t=${Date.now()}`)).text();
+        Handlebars.compile(text)(ctx);
+        log('ok', `ok - ${path} renders (${label})`);
+      } catch (err) {
+        log('bad', `${path} threw while rendering ${label}\n  ${err.message}`);
+      }
     }
   }
 })();
