@@ -433,12 +433,44 @@ def check_part_roots():
                  f"crashes ApplicationV2 the moment that branch turns on")
 
 
+# Every key a data model offers as rollable has to be a field that model actually carries.
+# creature.mjs shipped without Loyalty while the Check dialog assumed "no Stats means a
+# retainer, so it has Loyalty", and every roll from a Creature sheet threw before the dialog
+# could open. The dialog asks the model now; this checks the model's answer is true.
+ROLLABLE_RE = re.compile(r"rollableGroups\s*\(\s*\)\s*\{(.*?)\n  \}", re.S)
+GROUP_KEYS_RE = re.compile(r"keys:\s*\[([^\]]*)\]")
+
+
+def check_rollable_groups():
+    for path in sorted(ROOT.glob("module/data/*.mjs")):
+        text = path.read_text(encoding="utf-8")
+        body = ROLLABLE_RE.search(text)
+        name = path.relative_to(ROOT)
+
+        schema = re.search(r"static defineSchema\(\)\s*\{(.*?)\n  \}", text, re.S)
+        if not schema:
+            continue  # an Item model, or something with no schema of its own
+        if not body:
+            if "rollTarget" in text:
+                fail(f"{name}: has rollTarget but no rollableGroups(), so the Check dialog "
+                     f"has nothing to ask and offers no numbers for it")
+            continue
+
+        for literal in GROUP_KEYS_RE.findall(body.group(1)):
+            for key in re.findall(r"'([^']+)'", literal):
+                # A field of the model itself, or one inside its stats/saves groups.
+                if not re.search(rf"\b{re.escape(key)}:\s", schema.group(1)):
+                    fail(f"{name}: rollableGroups() offers {key!r}, which is not a field in "
+                         f"defineSchema() -- it would be silently dropped from the dialog")
+
+
 def main() -> int:
     flat = check_lang()
     check_referenced_keys(flat)
     check_manifest()
     check_templates()
     check_part_roots()
+    check_rollable_groups()
     check_packs()
     check_table_results()
     check_table_references()

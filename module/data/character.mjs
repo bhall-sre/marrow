@@ -134,6 +134,14 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       .reduce((sum, i) => sum + i.system.bleeding, 0);
   }
 
+  /** The numbers a Check can be rolled against, for whatever wants to offer a choice. */
+  rollableGroups() {
+    return [
+      { label: 'MARROW.Stats', keys: Object.keys(this.stats) },
+      { label: 'MARROW.Saves', keys: Object.keys(this.saves) },
+    ];
+  }
+
   /**
    * The number to roll under for a Stat or Save, plus any Skill that applies.
    * @param {string} key  a Stat or Save key

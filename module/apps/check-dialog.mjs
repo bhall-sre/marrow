@@ -89,22 +89,36 @@ export class CheckDialog {
     return new MarrowCheck(actor, { key: chosenKey, kind, flavor, skills: chosenSkills, sources }).evaluate();
   }
 
-  /** Every number on this actor that can be rolled under. */
+  /**
+   * Every number on this actor that can be rolled under.
+   *
+   * The data model is asked rather than inferred from the shape of its fields. Guessing
+   * here -- "no Stats, so it must be a retainer, so it has Loyalty" -- is what crashed
+   * every roll on a Creature sheet the moment a third Actor type existed: creatures have
+   * no Loyalty, and reading .label off it threw before the dialog could open.
+   *
+   * Keys are filtered against what is actually on the model, so a group naming a field some
+   * future type does not carry loses that one entry instead of taking the dialog down.
+   */
   static #rollableKeys(actor) {
     const s = actor.system;
-    const groups = [];
-    if (s.stats) groups.push({ label: 'MARROW.Stats', keys: Object.keys(s.stats), source: s.stats });
-    if (s.saves) groups.push({ label: 'MARROW.Saves', keys: Object.keys(s.saves), source: s.saves });
-    // XX: a retainer has Combat, Instinct and Loyalty and nothing else.
-    if (!s.stats) groups.push({ label: 'MARROW.Numbers', keys: ['combat', 'instinct', 'loyalty'], source: s });
+    const groups = s.rollableGroups?.() ?? [];
+
     return groups.map(g => ({
       label: game.i18n.localize(g.label),
-      options: g.keys.map(k => ({ key: k, label: g.source[k].label, total: g.source[k].total })),
-    }));
+      options: g.keys
+        .map(k => ({ key: k, entry: CheckDialog.#numberAt(s, k) }))
+        .filter(o => o.entry)
+        .map(o => ({ key: o.key, label: o.entry.label, total: o.entry.total })),
+    })).filter(g => g.options.length);
+  }
+
+  /** A rollable number lives either in a group (Stats, Saves) or directly on the model. */
+  static #numberAt(system, key) {
+    return system.stats?.[key] ?? system.saves?.[key] ?? system[key] ?? null;
   }
 
   static #labelFor(actor, key) {
-    const s = actor.system;
-    return s.stats?.[key]?.label ?? s.saves?.[key]?.label ?? s[key]?.label ?? key;
+    return CheckDialog.#numberAt(actor.system, key)?.label ?? key;
   }
 }

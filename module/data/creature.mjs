@@ -62,9 +62,18 @@ export class CreatureData extends foundry.abstract.TypeDataModel {
       .reduce((sum, i) => sum + i.system.bleeding, 0);
   }
 
-  /** Only two numbers exist to roll against. */
-  rollTarget(key) {
-    return key === 'combat' ? this.combat.total : this.instinct.total;
+  /** The numbers a Check can be rolled against, for whatever wants to offer a choice. */
+  rollableGroups() {
+    return [{ label: 'MARROW.Numbers', keys: ['combat', 'instinct'] }];
+  }
+
+  /**
+   * Only two numbers exist to roll against. `skillBonus` is accepted and added like every
+   * other model's: a creature holds no Skills by default, but nothing stops a Warden
+   * dropping one on it, and silently discarding the bonus would be a lie.
+   */
+  rollTarget(key, skillBonus = 0) {
+    return (key === 'combat' ? this.combat.total : this.instinct.total) + skillBonus;
   }
 
   hasDisadvantageOn() {

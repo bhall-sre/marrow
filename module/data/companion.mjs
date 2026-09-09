@@ -112,6 +112,11 @@ export class CompanionData extends foundry.abstract.TypeDataModel {
       .reduce((sum, i) => sum + i.system.bleeding, 0);
   }
 
+  /** The numbers a Check can be rolled against, for whatever wants to offer a choice. */
+  rollableGroups() {
+    return [{ label: 'MARROW.Numbers', keys: ['combat', 'instinct', 'loyalty'] }];
+  }
+
   /**
    * Instinct stands in for five of a character's numbers, so any Save a retainer is asked
    * for that is not Loyalty resolves against Instinct.

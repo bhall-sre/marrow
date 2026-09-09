@@ -272,6 +272,56 @@ Handlebars.registerHelper('checked', (v) => (v ? 'checked' : ''));
       log('bad', `${path} threw while rendering\n  ${err.message}`);
     }
   }
+
+  head('9. Open a Check on every Actor type');
+  /*
+    Every roll goes through CheckDialog.prompt, and prompt asks the actor what numbers it
+    has before it can build the dialog. That question used to be answered by guessing from
+    the shape of the model -- "no Stats, so it is a retainer, so it has Loyalty" -- which
+    threw on every single roll from a Creature sheet from the moment a third Actor type
+    existed. Nothing here exercised the dialog, so nothing caught it.
+
+    The actor is a plain object wearing the real data model's prototype, so rollableGroups()
+    and rollTarget() are the shipped ones, not a copy that can drift.
+  */
+  const { CheckDialog } = await import(`../module/apps/check-dialog.mjs?t=${Date.now()}`);
+  const score = (label, total) => ({ label, value: total, total, penalty: 0 });
+
+  const SUBJECTS = {
+    character: {
+      stats: { strength: score('Strength', 40), speed: score('Speed', 44),
+               intellect: score('Intellect', 33), combat: score('Combat', 44) },
+      saves: { sanity: score('Sanity', 20), fear: score('Fear', 43), body: score('Body', 23) },
+    },
+    companion: {
+      combat: score('Combat', 30), instinct: score('Instinct', 25), loyalty: score('Loyalty', 22),
+    },
+    creature: { combat: score('Combat', 75), instinct: score('Instinct', 40) },
+  };
+
+  for (const [type, data] of Object.entries(SUBJECTS)) {
+    const model = CONFIG.Actor.dataModels[type];
+    if (!model) { log('bad', `${type}: no data model registered`); continue; }
+
+    const system = Object.assign(Object.create(model.prototype), data);
+    const actor = { name: `Test ${type}`, system, items: [] };
+
+    try {
+      // DialogV2.wait is stubbed to return undefined, so this runs everything up to and
+      // including the part that used to throw, then bails out the way a cancel does.
+      await CheckDialog.prompt(actor, { key: type === 'character' ? 'combat' : 'combat' });
+      const groups = system.rollableGroups();
+      const offered = groups.flatMap(g => g.keys);
+      const missing = offered.filter(k => !(system.stats?.[k] ?? system.saves?.[k] ?? system[k]));
+      if (missing.length) {
+        log('bad', `${type}: rollableGroups() offers ${missing.join(', ')} with no such field`);
+      } else {
+        log('ok', `ok - ${type} opens a Check, offering ${offered.join(', ')}`);
+      }
+    } catch (err) {
+      log('bad', `${type}: opening a Check threw\n  ${err.message}`);
+    }
+  }
 })();
 </script>
 <script>
